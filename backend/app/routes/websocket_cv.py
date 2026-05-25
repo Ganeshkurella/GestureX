@@ -3,6 +3,7 @@ import numpy as np
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.cv.hand_tracker import HandTracker
+from app.services.predictor import predictor_service
 
 router = APIRouter()
 
@@ -44,11 +45,24 @@ async def websocket_endpoint(websocket: WebSocket):
             # Process frame using HandTracker
             detected_hands = tracker.process_frame(frame)
             
-            # Send hand data back to client
+            # Predict gesture if a hand is detected and the model is ready
+            gesture_name = "None"
+            confidence = 0.0
+            
+            if len(detected_hands) > 0 and predictor_service.is_loaded:
+                try:
+                    # Perform inference on the first detected hand
+                    gesture_name, confidence = predictor_service.predict(detected_hands[0]['landmarks'])
+                except Exception as pred_err:
+                    print(f"WebSocket prediction error: {pred_err}")
+            
+            # Send hand coordinates and prediction class back in a single frame payload
             response = {
                 "success": True,
                 "detected": len(detected_hands) > 0,
-                "hands": detected_hands
+                "hands": detected_hands,
+                "gesture": gesture_name,
+                "confidence": confidence
             }
             
             await websocket.send_text(json.dumps(response))

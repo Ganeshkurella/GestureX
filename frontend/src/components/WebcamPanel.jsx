@@ -4,6 +4,7 @@ import { CameraOff, Scan, AlertCircle } from 'lucide-react';
 import { useMediaPipe } from '../hooks/useMediaPipe';
 import { useFPS } from '../hooks/useFPS';
 import { TrackingWebSocketService } from '../services/websocket';
+import { predictGesture } from '../services/api';
 
 // Landmark joints connection maps
 const HAND_CONNECTIONS = [
@@ -21,13 +22,16 @@ export default function WebcamPanel({
   onHandResults,
   onFPSChange,
   onWSStatusChange,
-  isModelLoadingCallback
+  isModelLoadingCallback,
+  onPredictionResult
 }) {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const wsServiceRef = useRef(null);
   const lastProcessTimeRef = useRef(0);
+  const lastPredictTimeRef = useRef(0);
+  const sentTimesRef = useRef([]);
 
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
@@ -122,6 +126,13 @@ export default function WebcamPanel({
   // Handle server-side results (FastAPI WS)
   const handleServerMessage = useCallback((data) => {
     updateFPS();
+    
+    let latency = 0;
+    if (sentTimesRef.current.length > 0) {
+      const sendTime = sentTimesRef.current.shift();
+      latency = Math.round(performance.now() - sendTime);
+    }
+
     if (data.success) {
       const formattedHands = data.hands.map((h) => ({
         label: h.label,
@@ -130,13 +141,20 @@ export default function WebcamPanel({
       }));
       onHandResults(formattedHands);
       drawOverlay(formattedHands);
+      
+      // Update predictions in the dashboard from socket payload
+      if (onPredictionResult) {
+        onPredictionResult(data.gesture || 'None', data.confidence || 0.0, latency);
+      }
     } else {
       onHandResults([]);
       drawOverlay([]);
+      if (onPredictionResult) {
+        onPredictionResult('None', 0.0, latency);
+      }
     }
-  }, [onHandResults, drawOverlay, updateFPS]);
+  }, [onHandResults, drawOverlay, updateFPS, onPredictionResult]);
 
-  // Handle WS Connection status
   const handleWSStatusChange = useCallback((status) => {
     setWsStatus(status);
     if (onWSStatusChange) {
@@ -195,9 +213,29 @@ export default function WebcamPanel({
           }));
           onHandResults(formattedHands);
           drawOverlay(formattedHands);
+
+          // Throttled client-side REST predict calls
+          const now = performance.now();
+          if (now - lastPredictTimeRef.current > 200) { // 5 Hz
+            lastPredictTimeRef.current = now;
+            const startTime = performance.now();
+            predictGesture(formattedHands[0].landmarks)
+              .then((pred) => {
+                const latency = Math.round(performance.now() - startTime);
+                if (onPredictionResult) {
+                  onPredictionResult(pred.gesture, pred.confidence, latency);
+                }
+              })
+              .catch((err) => {
+                console.error("API Prediction error:", err);
+              });
+          }
         } else {
           onHandResults([]);
           drawOverlay([]);
+          if (onPredictionResult) {
+            onPredictionResult('None', 0.0, 0);
+          }
         }
       } else if (processingMode === 'server' && wsStatus === 'connected') {
         // Server-side WebSocket streaming (limit to ~20fps to save bandwidth)
@@ -216,6 +254,10 @@ export default function WebcamPanel({
           
           offscreenCanvas.toBlob((blob) => {
             if (blob && wsServiceRef.current) {
+              sentTimesRef.current.push(performance.now());
+              if (sentTimesRef.current.length > 100) {
+                sentTimesRef.current.shift();
+              }
               wsServiceRef.current.sendFrame(blob);
             }
           }, 'image/jpeg', 0.55); // 55% quality compression
@@ -231,7 +273,7 @@ export default function WebcamPanel({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [processingMode, detectHands, updateFPS, onHandResults, drawOverlay, wsStatus]);
+  }, [processingMode, detectHands, updateFPS, onHandResults, drawOverlay, wsStatus, onPredictionResult]);
 
   const handleCameraUserMedia = () => {
     setCameraActive(true);

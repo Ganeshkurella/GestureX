@@ -6,6 +6,15 @@ import CoordinateViewer from './CoordinateViewer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDatasetCounts, saveDatasetSample } from '../services/api';
 
+const GESTURE_THEMES = {
+  'Thumbs Up': { color: 'text-cyber-green', bar: 'bg-cyber-green shadow-[0_0_12px_rgba(0,255,136,0.5)]', glow: 'shadow-[0_0_20px_rgba(0,255,136,0.25)]', border: 'border-cyber-green/45' },
+  'Peace': { color: 'text-purple-400', bar: 'bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.5)]', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]', border: 'border-purple-500/40' },
+  'Stop Palm': { color: 'text-cyber-rose', bar: 'bg-cyber-rose shadow-[0_0_12px_rgba(255,0,127,0.5)]', glow: 'shadow-[0_0_20px_rgba(255,0,127,0.25)]', border: 'border-cyber-rose/40' },
+  'Fist': { color: 'text-cyber-amber', bar: 'bg-cyber-amber shadow-[0_0_12px_rgba(255,170,0,0.5)]', glow: 'shadow-[0_0_20px_rgba(255,170,0,0.25)]', border: 'border-cyber-amber/40' },
+  'OK Sign': { color: 'text-cyber-cyan', bar: 'bg-cyber-cyan shadow-[0_0_12px_rgba(102,252,241,0.5)]', glow: 'shadow-[0_0_20px_rgba(102,252,241,0.25)]', border: 'border-cyber-cyan/40' },
+  'None': { color: 'text-cyber-text/30', bar: 'bg-cyber-text/20', glow: '', border: 'border-cyber-border/10' }
+};
+
 export default function Dashboard({ onBackToLanding }) {
   const [processingMode, setProcessingMode] = useState('client'); // 'client' | 'server'
   const [showConnections, setShowConnections] = useState(true);
@@ -31,8 +40,37 @@ export default function Dashboard({ onBackToLanding }) {
   const [saveStatus, setSaveStatus] = useState('IDLE'); // 'IDLE' | 'SAVING' | 'SUCCESS' | 'ERROR'
   const [errorMsg, setErrorMsg] = useState('');
 
+  // AI inference state
+  const [activePrediction, setActivePrediction] = useState('None');
+  const [predictionConfidence, setPredictionConfidence] = useState(0.0);
+  const [predictionHistory, setPredictionHistory] = useState([]);
+  const [inferenceLatency, setInferenceLatency] = useState(0);
+
   const handleHandResults = useCallback((hands) => {
     setHandsData(hands);
+  }, []);
+
+  const handlePredictionResult = useCallback((gesture, confidence, latency = 0) => {
+    setActivePrediction(gesture);
+    setPredictionConfidence(confidence);
+    if (latency > 0) {
+      setInferenceLatency(latency);
+    }
+    
+    if (gesture && gesture !== 'None' && gesture !== 'Searching...') {
+      setPredictionHistory((prev) => {
+        if (prev.length > 0 && prev[0].gesture === gesture) {
+          return prev;
+        }
+        const newItem = {
+          gesture,
+          confidence,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          id: Date.now()
+        };
+        return [newItem, ...prev].slice(0, 5);
+      });
+    }
   }, []);
 
   // Fetch initial sample counts
@@ -193,7 +231,102 @@ export default function Dashboard({ onBackToLanding }) {
                 onFPSChange={setFps}
                 onWSStatusChange={setWsStatus}
                 isModelLoadingCallback={setIsModelLoading}
+                onPredictionResult={handlePredictionResult}
               />
+
+              {/* AI Inference Panel */}
+              <div className="glass-panel p-5 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40">
+                {/* Top ambient highlight line */}
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
+                
+                <div className="flex items-center justify-between border-b border-cyber-border/20 pb-2 mb-4">
+                  <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2">
+                    <Zap className="w-3.5 h-3.5 text-cyber-cyan animate-pulse" /> AI GESTURE RECOGNITION
+                  </h3>
+                  <div className="flex items-center gap-2 font-mono text-[10px] text-cyber-text/50">
+                    <span>LATENCY:</span>
+                    <span className={`font-bold ${inferenceLatency > 0 ? 'text-cyber-green' : 'text-cyber-text/30'}`}>
+                      {inferenceLatency > 0 ? `${inferenceLatency} ms` : '--'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Left Side: Current Prediction */}
+                  <div className="flex flex-col justify-between bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/10 relative overflow-hidden min-h-[140px]">
+                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-ping"></div>
+                    <div>
+                      <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider block">
+                        Active Prediction
+                      </span>
+                      <h2 className={`text-3xl font-black font-orbitron tracking-widest mt-2 ${(GESTURE_THEMES[activePrediction] || GESTURE_THEMES['None']).color} drop-shadow-[0_0_10px_rgba(102,252,241,0.3)]`}>
+                        {activePrediction.toUpperCase()}
+                      </h2>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="flex justify-between items-center text-[10px] font-mono text-cyber-text/60 mb-1">
+                        <span>CONFIDENCE</span>
+                        <span className="text-cyber-cyan font-bold">{(predictionConfidence * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden border border-cyber-border/5">
+                        <motion.div
+                          className={`h-full rounded-full ${(GESTURE_THEMES[activePrediction] || GESTURE_THEMES['None']).bar}`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${predictionConfidence * 100}%` }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Side: Prediction History */}
+                  <div className="flex flex-col justify-between bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/10">
+                    <div className="flex items-center justify-between border-b border-cyber-border/10 pb-1 mb-2">
+                      <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider">
+                        Prediction History
+                      </span>
+                      {predictionHistory.length > 0 && (
+                        <button
+                          onClick={() => setPredictionHistory([])}
+                          className="text-[9px] font-mono text-cyber-rose hover:underline"
+                        >
+                          CLEAR
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex-1 space-y-1.5 min-h-[100px] flex flex-col justify-center">
+                      {predictionHistory.length === 0 ? (
+                        <p className="text-[10px] font-mono text-cyber-text/30 text-center py-6">
+                          No predictions recorded yet.
+                        </p>
+                      ) : (
+                        <div className="space-y-1 overflow-y-auto max-h-[110px] pr-1 scrollbar-thin">
+                          <AnimatePresence initial={false}>
+                            {predictionHistory.map((item) => (
+                              <motion.div
+                                key={item.id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 10 }}
+                                transition={{ duration: 0.15 }}
+                                className="flex justify-between items-center bg-black/40 px-2 py-1 rounded border border-cyber-border/5 text-[10px] font-mono"
+                              >
+                                <span className="text-white font-semibold">{item.gesture}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-cyber-cyan">{(item.confidence * 100).toFixed(0)}%</span>
+                                  <span className="text-cyber-text/30 text-[9px]">{item.timestamp}</span>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Status indicator underneath */}
               <StatusIndicator
@@ -320,7 +453,7 @@ export default function Dashboard({ onBackToLanding }) {
                           const isActive = selectedGesture === gesture;
                           return (
                             <button
-                              key={gesture, idx}
+                              key={gesture}
                               onClick={() => setSelectedGesture(gesture)}
                               className={`py-1.5 rounded font-orbitron text-[9px] text-left px-2 tracking-wider transition-all flex items-center justify-between border ${
                                 isActive
