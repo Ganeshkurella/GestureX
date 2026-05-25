@@ -112,10 +112,10 @@ export default function LandingPage({ onEnterDashboard }) {
             </div>
  
             <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
-              Skeletal Hand Tracking
+              21-Point Skeletal Mesh
             </h3>
             <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
-              Maps 21 hand joints and fingertips in real-time space for high-precision gesture coordinates.
+              Extracts high-fidelity Cartesian coordinates mapping wrists, joints, and fingertips in absolute depth space.
             </p>
             
             {/* Visual simulation bar */}
@@ -136,10 +136,10 @@ export default function LandingPage({ onEnterDashboard }) {
             </div>
  
             <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
-              In-Browser AI Engine
+              Lightweight Edge Inference
             </h3>
             <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
-              Runs machine learning models directly in your browser using secure client-side computing.
+              Processes 63-dimensional coordinate arrays natively on the client using optimized GPU WASM delegates.
             </p>
  
             {/* Visual simulation bar */}
@@ -160,10 +160,10 @@ export default function LandingPage({ onEnterDashboard }) {
             </div>
  
             <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
-              Real-Time Data Streaming
+              Websocket Telemetry
             </h3>
             <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
-              Syncs tracking telemetry and predicted gesture states instantly with low-latency data streams.
+              Streams coordinate frames and receives predictions via persistent, bidirectional WebSocket channels.
             </p>
  
             {/* Visual simulation bar */}
