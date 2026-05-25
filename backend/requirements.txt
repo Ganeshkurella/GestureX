@@ -1,11 +1,13 @@
 fastapi>=0.100.0
 uvicorn>=0.22.0
-opencv-python>=4.8.0.76
-mediapipe>=0.10.0
 numpy>=1.24.0
 websockets>=11.0.0
 python-multipart>=0.0.6
 scikit-learn>=1.2.0
-pandas>=2.0.0
 joblib>=1.2.0
-matplotlib>=3.7.0
+
+# Optional dependencies for local training and server-side tracking (Excluded on Vercel to fit 500MB function limit):
+# opencv-python>=4.8.0.76
+# mediapipe>=0.10.0
+# pandas>=2.0.0
+# matplotlib>=3.7.0

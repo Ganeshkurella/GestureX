@@ -1,9 +1,15 @@
-import cv2
 import numpy as np
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from app.cv.hand_tracker import HandTracker
 from app.services.predictor import predictor_service
+
+# Optional imports for heavy computer vision libraries (e.g. on serverless Vercel)
+try:
+    import cv2
+    from app.cv.hand_tracker import HandTracker
+    CV_ENABLED = True
+except ImportError:
+    CV_ENABLED = False
 
 router = APIRouter()
 
@@ -15,6 +21,14 @@ router = APIRouter()
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
+    if not CV_ENABLED:
+        await websocket.send_json({
+            "success": False,
+            "error": "Server-side Computer Vision is disabled in this cloud environment (missing opencv-python or mediapipe). Please switch to Client (WASM) mode."
+        })
+        await websocket.close()
+        return
+        
     # Initialize hand tracker for this session
     tracker = HandTracker(
         static_image_mode=False,
@@ -79,4 +93,5 @@ async def websocket_endpoint(websocket: WebSocket):
         except:
             pass
     finally:
-        tracker.close()
+        if CV_ENABLED and 'tracker' in locals():
+            tracker.close()

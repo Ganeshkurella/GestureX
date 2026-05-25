@@ -50,22 +50,24 @@ export default function WebcamPanel({
   const toggleCamera = useCallback(() => {
     setIsCameraEnabled((prev) => {
       const next = !prev;
-      if (!next) {
-        setCameraActive(false);
-        onHandResults([]);
-        // Clear canvas
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const ctx = canvas.getContext('2d');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+      setTimeout(() => {
+        if (!next) {
+          setCameraActive(false);
+          onHandResults([]);
+          // Clear canvas
+          const canvas = canvasRef.current;
+          if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+          if (onPredictionResult) {
+            onPredictionResult('None', 0.0, 0);
+          }
+          addHudLog("OPTICAL CAPTURE SUSPENDED BY OPERATOR");
+        } else {
+          addHudLog("INITIALIZING LIVE CAPTURE STREAM...");
         }
-        if (onPredictionResult) {
-          onPredictionResult('None', 0.0, 0);
-        }
-        addHudLog("OPTICAL CAPTURE SUSPENDED BY OPERATOR");
-      } else {
-        addHudLog("INITIALIZING LIVE CAPTURE STREAM...");
-      }
+      }, 0);
       return next;
     });
   }, [onHandResults, onPredictionResult, addHudLog]);
