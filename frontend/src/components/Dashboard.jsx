@@ -65,6 +65,7 @@ export default function Dashboard({ onBackToLanding }) {
   const [fps, setFps] = useState(0);
   const [wsStatus, setWsStatus] = useState('disconnected');
   const [isModelLoading, setIsModelLoading] = useState(true);
+  const [showDevTools, setShowDevTools] = useState(false); // Collapsible dev panel
   
   const [activeTab, setActiveTab] = useState('workspace'); // 'workspace' | 'docs'
 
@@ -308,400 +309,341 @@ export default function Dashboard({ onBackToLanding }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            className="flex flex-col gap-6"
           >
-            {/* Left: Webcam Stream Panel & Telemetry Indicator (span 2 cols) */}
-            <div className="lg:col-span-2 flex flex-col gap-6">
-              <WebcamPanel
-                processingMode={processingMode}
-                showConnections={showConnections}
-                showLabels={showLabels}
-                onHandResults={handleHandResults}
-                onFPSChange={setFps}
-                onWSStatusChange={setWsStatus}
-                isModelLoadingCallback={setIsModelLoading}
-                onPredictionResult={handlePredictionResult}
-                activePrediction={activePrediction}
-                predictionConfidence={predictionConfidence}
-              />
+            {/* Main Area: 2 Columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column (span 2): Webcam panel & status */}
+              <div className="lg:col-span-2 flex flex-col gap-5">
+                <WebcamPanel
+                  processingMode={processingMode}
+                  showConnections={showConnections}
+                  showLabels={showLabels}
+                  onHandResults={handleHandResults}
+                  onFPSChange={setFps}
+                  onWSStatusChange={setWsStatus}
+                  isModelLoadingCallback={setIsModelLoading}
+                  onPredictionResult={handlePredictionResult}
+                  activePrediction={activePrediction}
+                  predictionConfidence={predictionConfidence}
+                />
 
-              {/* Status indicator underneath */}
-              <StatusIndicator
-                cameraActive={true}
-                handDetected={handsData.length > 0}
-                handsInfo={handsData}
-                fps={fps}
-                processingMode={processingMode}
-                wsStatus={wsStatus}
-                isModelLoading={isModelLoading}
-              />
-            </div>
-
-            {/* Right: Premium Inference Stats & Controls */}
-            <div className="flex flex-col gap-6">
-              
-              {/* Premium Prediction Panel */}
-              <div className="glass-panel p-5 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40 shadow-glass flex flex-col gap-4">
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
-                
-                <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2 border-b border-cyber-border/10 pb-2">
-                  <Zap className="w-3.5 h-3.5 text-cyber-cyan animate-pulse" /> CLASSIFICATION ANALYTICS
-                </h3>
-
-                {/* Main recognition ring and label card */}
-                <div className="flex items-center gap-4 bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/15 relative overflow-hidden">
-                  <div className="absolute top-1 right-2 flex items-center gap-1">
-                    <span className="text-[8px] font-mono text-cyber-text/40">LATENCY:</span>
-                    <span className={`text-[8px] font-mono font-bold ${inferenceLatency > 0 ? 'text-cyber-green' : 'text-cyber-text/30'}`}>
-                      {inferenceLatency > 0 ? `${inferenceLatency}ms` : '--'}
-                    </span>
-                  </div>
-
-                  {/* Circular SVG Gauge */}
-                  <div className="relative w-20 h-20 flex items-center justify-center">
-                    <svg className="w-full h-full transform -rotate-90">
-                      {/* Gray track */}
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r={radius}
-                        stroke="rgba(197, 198, 199, 0.08)"
-                        strokeWidth="5"
-                        fill="transparent"
-                      />
-                      {/* Neon indicator circle */}
-                      <motion.circle
-                        cx="40"
-                        cy="40"
-                        r={radius}
-                        stroke={activeTheme.stroke}
-                        strokeWidth="5"
-                        fill="transparent"
-                        strokeDasharray={circumference}
-                        animate={{ strokeDashoffset }}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
-                      />
-                    </svg>
-                    <div className="absolute font-orbitron text-[10px] font-bold text-white text-center">
-                      <div className="text-[12px]">{(predictionConfidence * 100).toFixed(0)}%</div>
-                      <div className="text-[7px] text-cyber-text/40 tracking-wider">CONF</div>
-                    </div>
-                  </div>
-
-                  {/* Classification Text */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <span className="text-[8px] text-cyber-text/40 font-mono tracking-wider block">ACTIVE STATE</span>
-                    <h2 className={`text-2xl font-black font-orbitron tracking-wider mt-0.5 ${activeTheme.color} drop-shadow-[0_0_12px_rgba(102,252,241,0.2)]`}>
-                      {activePrediction.toUpperCase()}
-                    </h2>
-                  </div>
-                </div>
-
-                {/* Telemetry charts row */}
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Latency Sparkline */}
-                  <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
-                    <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Latency Timeline</div>
-                    <div className="flex items-end justify-between gap-2 mt-1">
-                      <span className="font-orbitron font-bold text-xs text-cyber-green">{inferenceLatency || '--'}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">ms</span></span>
-                      <svg width="60" height="20" className="opacity-80">
-                        <path
-                          d={getSparklinePath(latencyHistory, 60, 20)}
-                          fill="transparent"
-                          stroke="#00ff88"
-                          strokeWidth="1.5"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* FPS Stability Sparkline */}
-                  <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
-                    <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Frame Stability</div>
-                    <div className="flex items-end justify-between gap-2 mt-1">
-                      <span className="font-orbitron font-bold text-xs text-cyber-cyan">{fps}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">Hz</span></span>
-                      <svg width="60" height="20" className="opacity-80">
-                        <path
-                          d={getSparklinePath(fpsHistory, 60, 20)}
-                          fill="transparent"
-                          stroke="#66fcf1"
-                          strokeWidth="1.5"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Horizontal Bar Chart (Gesture frequency distribution) */}
-                <div className="bg-cyber-bg/30 p-3 rounded-lg border border-cyber-border/10 flex flex-col gap-2">
-                  <div className="flex items-center gap-1 text-[8px] font-mono text-cyber-text/40 uppercase pb-1 border-b border-cyber-border/5">
-                    <BarChart2 className="w-3.5 h-3.5 text-cyber-text/40" /> Cumulative Frequency Dist
-                  </div>
-                  <div className="space-y-2 mt-1 select-none">
-                    {['Thumbs Up', 'Peace', 'Stop Palm', 'Fist', 'OK Sign'].map((gesture) => {
-                      const count = gestureFrequency[gesture] || 0;
-                      const maxCount = Math.max(...Object.values(gestureFrequency), 1);
-                      const widthPercent = (count / maxCount) * 100;
-                      const theme = GESTURE_THEMES[gesture];
-                      
-                      return (
-                        <div key={gesture} className="space-y-0.5">
-                          <div className="flex justify-between text-[8px] font-mono text-cyber-text/60">
-                            <span>{gesture}</span>
-                            <span className="text-white">{count}</span>
-                          </div>
-                          <div className="h-1 w-full bg-black/45 rounded-full overflow-hidden">
-                            <motion.div
-                              className={`h-full rounded-full ${theme.bar}`}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${widthPercent}%` }}
-                              transition={{ duration: 0.3 }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Prediction History Logs */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-[8px] font-mono text-cyber-text/40 uppercase border-b border-cyber-border/5 pb-1">
-                    <span>Chronological Logs</span>
-                    {predictionHistory.length > 0 && (
-                      <button onClick={() => setPredictionHistory([])} className="text-cyber-rose hover:underline text-[7px]">CLEAR</button>
-                    )}
-                  </div>
-                  <div className="space-y-1 max-h-[110px] overflow-y-auto pr-1 scrollbar-thin">
-                    {predictionHistory.length === 0 ? (
-                      <div className="text-[8px] font-mono text-cyber-text/30 text-center py-4">[EMPTY FEED]</div>
-                    ) : (
-                      <AnimatePresence initial={false}>
-                        {predictionHistory.map((item) => {
-                          const theme = GESTURE_THEMES[item.gesture] || GESTURE_THEMES['None'];
-                          return (
-                            <motion.div
-                              key={item.id}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: 10 }}
-                              className="flex justify-between items-center bg-black/40 px-2 py-1 rounded border border-cyber-border/5 text-[9px] font-mono"
-                            >
-                              <span className={`font-semibold ${theme.color}`}>{item.gesture}</span>
-                              <div className="flex items-center gap-2 text-cyber-text/40">
-                                <span>{(item.confidence * 100).toFixed(0)}%</span>
-                                <span className="text-[8px]">{item.timestamp}</span>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                      </AnimatePresence>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Settings Controls Panel */}
-              <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40">
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
-                
-                <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2 mb-3">
-                  <Settings className="w-3.5 h-3.5" /> ENGINE CONTROLS
-                </h3>
-
-                <div className="space-y-4">
-                  {/* Pipeline Processing Toggle */}
-                  <div>
-                    <label className="text-[10px] text-cyber-text/50 font-mono uppercase block mb-1.5">
-                      Processing Pipeline
-                    </label>
-                    <div className="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded border border-cyber-border/10">
-                      <button
-                        onClick={() => setProcessingMode('client')}
-                        className={`py-1.5 rounded font-orbitron text-[10px] tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                          processingMode === 'client'
-                            ? 'bg-cyber-cyan/20 text-cyber-cyan shadow-neon-cyan/10 border border-cyber-cyan/35'
-                            : 'text-cyber-text/55 border border-transparent hover:text-cyber-text/90'
-                        }`}
-                      >
-                        <Cpu className="w-3.5 h-3.5" /> CLIENT (MP JS)
-                      </button>
-                      <button
-                        onClick={() => setProcessingMode('server')}
-                        className={`py-1.5 rounded font-orbitron text-[10px] tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                          processingMode === 'server'
-                            ? 'bg-cyber-rose/20 text-cyber-rose shadow-neon-rose/10 border border-cyber-rose/35'
-                            : 'text-cyber-text/55 border border-transparent hover:text-cyber-text/90'
-                        }`}
-                      >
-                        <Server className="w-3.5 h-3.5" /> SERVER (FASTAPI)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Visual Render options */}
-                  <div className="space-y-2 pt-2 border-t border-cyber-border/10">
-                    <label className="text-[10px] text-cyber-text/50 font-mono uppercase block">
-                      Render Settings
-                    </label>
-                    
-                    <div className="flex items-center justify-between py-1">
-                      <span className="text-xs font-mono text-cyber-text/80">Draw Hand Skeletal Connections</span>
-                      <button
-                        onClick={() => setShowConnections(!showConnections)}
-                        className={`w-10 h-5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${
-                          showConnections ? 'bg-cyber-cyan' : 'bg-cyber-panel/80 border border-cyber-border/20'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 rounded-full bg-black shadow transition-transform duration-200 ${
-                          showConnections ? 'translate-x-5' : 'translate-x-0'
-                        }`}></div>
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between py-1">
-                      <span className="text-xs font-mono text-cyber-text/80">Draw Hand Side Labels</span>
-                      <button
-                        onClick={() => setShowLabels(!showLabels)}
-                        className={`w-10 h-5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${
-                          showLabels ? 'bg-cyber-cyan' : 'bg-cyber-panel/80 border border-cyber-border/20'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 rounded-full bg-black shadow transition-transform duration-200 ${
-                          showLabels ? 'translate-x-5' : 'translate-x-0'
-                        }`}></div>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <StatusIndicator
+                  cameraActive={true}
+                  handDetected={handsData.length > 0}
+                  handsInfo={handsData}
+                  fps={fps}
+                  processingMode={processingMode}
+                  wsStatus={wsStatus}
+                  isModelLoading={isModelLoading}
+                />
               </div>
 
-              {/* Dataset Recorder Panel */}
-              <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40">
-                <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${isRecordingContinuous ? 'via-cyber-rose animate-pulse' : 'via-cyber-amber'} to-transparent`}></div>
-
-                <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
-                  <h3 className="font-orbitron text-xs font-bold text-cyber-amber tracking-wider flex items-center gap-2">
-                    <Database className="w-3.5 h-3.5" /> DATASET RECORDER
-                  </h3>
+              {/* Right Column (span 1): AI Prediction Analytics */}
+              <div className="flex flex-col gap-5">
+                <div className="glass-panel p-5 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40 shadow-glass flex flex-col gap-4">
+                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
                   
-                  <div className="flex items-center gap-1.5 cursor-pointer select-none" onClick={() => setIsRecordMode(!isRecordMode)}>
-                    <span className="text-[10px] text-cyber-text/50 font-mono">RECORDER:</span>
-                    <span className={`text-[10px] font-bold font-orbitron px-1.5 py-0.5 rounded border transition-colors ${
-                      isRecordMode 
-                        ? 'bg-cyber-amber/15 text-cyber-amber border-cyber-amber/40 shadow-neon-amber/20' 
-                        : 'bg-black/30 text-cyber-text/30 border-cyber-border/15'
-                    }`}>
-                      {isRecordMode ? 'ACTIVE' : 'STANDBY'}
-                    </span>
-                  </div>
-                </div>
+                  <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2 border-b border-cyber-border/10 pb-2">
+                    <Zap className="w-3.5 h-3.5 text-cyber-cyan animate-pulse" /> CLASSIFICATION ANALYTICS
+                  </h3>
 
-                {isRecordMode ? (
-                  <div className="space-y-4">
-                    {/* Gesture Class Select Buttons */}
-                    <div>
-                      <label className="text-[10px] text-cyber-text/50 font-mono uppercase block mb-1.5">
-                        Target Gesture Label
-                      </label>
-                      <div className="grid grid-cols-2 gap-1.5 bg-black/40 p-1.5 rounded border border-cyber-border/10">
-                        {['Thumbs Up', 'Peace', 'Stop Palm', 'Fist', 'OK Sign'].map((gesture, idx) => {
-                          const isActive = selectedGesture === gesture;
-                          return (
-                            <button
-                              key={gesture}
-                              onClick={() => setSelectedGesture(gesture)}
-                              className={`py-1.5 rounded font-orbitron text-[9px] text-left px-2 tracking-wider transition-all flex items-center justify-between border ${
-                                isActive
-                                  ? 'bg-cyber-amber/20 text-cyber-amber border-cyber-amber/45 shadow-neon-amber/10'
-                                  : 'text-cyber-text/50 border-transparent hover:text-cyber-text/80'
-                              }`}
-                            >
-                              <span>{idx + 1}. {gesture.toUpperCase()}</span>
-                              <span className="font-mono text-[9px] bg-black/40 px-1 rounded text-cyber-text/40 font-bold">
-                                {sampleCounts[gesture] || 0}
-                              </span>
-                            </button>
-                          );
-                        })}
+                  {/* Recognition ring and label */}
+                  <div className="flex items-center gap-4 bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/15 relative overflow-hidden">
+                    <div className="absolute top-1 right-2 flex items-center gap-1">
+                      <span className="text-[8px] font-mono text-cyber-text/40">LATENCY:</span>
+                      <span className={`text-[8px] font-mono font-bold ${inferenceLatency > 0 ? 'text-cyber-green' : 'text-cyber-text/30'}`}>
+                        {inferenceLatency > 0 ? `${inferenceLatency}ms` : '--'}
+                      </span>
+                    </div>
+
+                    {/* Circular SVG Gauge */}
+                    <div className="relative w-20 h-20 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90">
+                        {/* Gray track */}
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r={radius}
+                          stroke="rgba(197, 198, 199, 0.08)"
+                          strokeWidth="5"
+                          fill="transparent"
+                        />
+                        {/* Neon indicator circle */}
+                        <motion.circle
+                          cx="40"
+                          cy="40"
+                          r={radius}
+                          stroke={activeTheme.stroke}
+                          strokeWidth="5"
+                          fill="transparent"
+                          strokeDasharray={circumference}
+                          animate={{ strokeDashoffset }}
+                          transition={{ duration: 0.25, ease: "easeOut" }}
+                        />
+                      </svg>
+                      <div className="absolute font-orbitron text-[10px] font-bold text-white text-center">
+                        <div className="text-[12px]">{(predictionConfidence * 100).toFixed(0)}%</div>
+                        <div className="text-[7px] text-cyber-text/40 tracking-wider">CONF</div>
                       </div>
                     </div>
 
-                    {/* Record Control Action Buttons */}
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-cyber-border/10">
-                      <button
-                        onClick={handleSaveSample}
-                        disabled={handsData.length === 0 || isRecordingContinuous}
-                        className={`py-2 rounded font-orbitron text-[10px] font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
-                          handsData.length > 0 && !isRecordingContinuous
-                            ? 'bg-transparent border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black shadow-neon-cyan/20'
-                            : 'bg-black/30 text-cyber-text/30 border-cyber-border/10 cursor-not-allowed'
-                        }`}
-                      >
-                        <Disc className="w-3.5 h-3.5" /> SNAPSHOT [SPACE]
-                      </button>
+                    {/* Classification text */}
+                    <div className="flex-1 flex flex-col justify-center">
+                      <span className="text-[8px] text-cyber-text/40 font-mono tracking-wider block">RECOGNIZED GESTURE</span>
+                      <h2 className={`text-2xl font-black font-orbitron tracking-wider mt-0.5 ${activeTheme.color} drop-shadow-[0_0_12px_rgba(102,252,241,0.2)]`}>
+                        {activePrediction.toUpperCase()}
+                      </h2>
+                    </div>
+                  </div>
 
-                      <button
-                        onClick={() => setIsRecordingContinuous(!isRecordingContinuous)}
-                        disabled={handsData.length === 0}
-                        className={`py-2 rounded font-orbitron text-[10px] font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
-                          handsData.length > 0
-                            ? isRecordingContinuous
-                              ? 'bg-cyber-rose text-black border-cyber-rose shadow-neon-rose'
-                              : 'bg-transparent border-cyber-rose text-cyber-rose hover:bg-cyber-rose hover:text-black shadow-neon-rose/20'
-                            : 'bg-black/30 text-cyber-text/30 border-cyber-border/10 cursor-not-allowed'
-                        }`}
-                      >
-                        <Play className={`w-3.5 h-3.5 ${isRecordingContinuous ? 'animate-spin' : ''}`} />
-                        {isRecordingContinuous ? 'STOP RECORD' : 'AUTO RECORD [R]'}
-                      </button>
+                  {/* Telemetry charts row */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Latency Sparkline */}
+                    <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
+                      <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Latency Timeline</div>
+                      <div className="flex items-end justify-between gap-2 mt-1">
+                        <span className="font-orbitron font-bold text-xs text-cyber-green">{inferenceLatency || '--'}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">ms</span></span>
+                        <svg width="60" height="20" className="opacity-80">
+                          <path
+                            d={getSparklinePath(latencyHistory, 60, 20)}
+                            fill="transparent"
+                            stroke="#00ff88"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      </div>
                     </div>
 
-                    {/* Status Feedback bar */}
-                    <div className="h-6 flex items-center justify-center text-[10px] font-mono rounded bg-black/40 border border-cyber-border/5 text-center">
-                      {saveStatus === 'SAVING' && (
-                        <span className="text-cyber-cyan flex items-center gap-1 animate-pulse justify-center">
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" /> EXPORTING DATASET DATA TO CSV...
-                        </span>
+                    {/* FPS Stability Sparkline */}
+                    <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
+                      <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Frame Stability</div>
+                      <div className="flex items-end justify-between gap-2 mt-1">
+                        <span className="font-orbitron font-bold text-xs text-cyber-cyan">{fps}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">Hz</span></span>
+                        <svg width="60" height="20" className="opacity-80">
+                          <path
+                            d={getSparklinePath(fpsHistory, 60, 20)}
+                            fill="transparent"
+                            stroke="#66fcf1"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Bar Chart (Gesture frequency distribution) */}
+                  <div className="bg-cyber-bg/30 p-3 rounded-lg border border-cyber-border/10 flex flex-col gap-2">
+                    <div className="flex items-center gap-1 text-[8px] font-mono text-cyber-text/40 uppercase pb-1 border-b border-cyber-border/5">
+                      <BarChart2 className="w-3.5 h-3.5 text-cyber-text/40" /> Cumulative Frequency Dist
+                    </div>
+                    <div className="space-y-2 mt-1 select-none">
+                      {['Thumbs Up', 'Peace', 'Stop Palm', 'Fist', 'OK Sign'].map((gesture) => {
+                        const count = gestureFrequency[gesture] || 0;
+                        const maxCount = Math.max(...Object.values(gestureFrequency), 1);
+                        const widthPercent = (count / maxCount) * 100;
+                        const theme = GESTURE_THEMES[gesture];
+                        
+                        return (
+                          <div key={gesture} className="space-y-0.5">
+                            <div className="flex justify-between text-[8px] font-mono text-cyber-text/60">
+                              <span>{gesture}</span>
+                              <span className="text-white">{count}</span>
+                            </div>
+                            <div className="h-1 w-full bg-black/45 rounded-full overflow-hidden">
+                              <motion.div
+                                className={`h-full rounded-full ${theme.bar}`}
+                                initial={{ width: 0 }}
+                                animate={{ width: `${widthPercent}%` }}
+                                transition={{ duration: 0.3 }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Prediction History Logs */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center text-[8px] font-mono text-cyber-text/40 uppercase border-b border-cyber-border/5 pb-1">
+                      <span>Chronological Logs</span>
+                      {predictionHistory.length > 0 && (
+                        <button onClick={() => setPredictionHistory([])} className="text-cyber-rose hover:underline text-[7px]">CLEAR</button>
                       )}
-                      {saveStatus === 'SUCCESS' && (
-                        <span className="text-cyber-green font-bold">
-                          ✓ SAMPLE EXPORTED SUCCESSFULLY
-                        </span>
-                      )}
-                      {saveStatus === 'ERROR' && (
-                        <span className="text-cyber-rose font-bold flex items-center gap-1 justify-center">
-                          ⚠ ERROR: {errorMsg}
-                        </span>
-                      )}
-                      {saveStatus === 'IDLE' && (
-                        <span className="text-cyber-text/45">
-                          {handsData.length > 0 
-                            ? 'SENSOR READY - SPACE TO RECORD' 
-                            : 'AWAITING HAND FEED...'}
-                        </span>
+                    </div>
+                    <div className="space-y-1 max-h-[100px] overflow-y-auto pr-1 scrollbar-thin">
+                      {predictionHistory.length === 0 ? (
+                        <div className="text-[8px] font-mono text-cyber-text/30 text-center py-4">[EMPTY FEED]</div>
+                      ) : (
+                        <AnimatePresence initial={false}>
+                          {predictionHistory.map((item) => {
+                            const theme = GESTURE_THEMES[item.gesture] || GESTURE_THEMES['None'];
+                            return (
+                              <motion.div
+                                key={item.id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 10 }}
+                                className="flex justify-between items-center bg-black/40 px-2 py-1 rounded border border-cyber-border/5 text-[9px] font-mono"
+                              >
+                                <span className={`font-semibold ${theme.color}`}>{item.gesture}</span>
+                                <div className="flex items-center gap-2 text-cyber-text/40">
+                                  <span>{(item.confidence * 100).toFixed(0)}%</span>
+                                  <span className="text-[8px]">{item.timestamp}</span>
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </AnimatePresence>
                       )}
                     </div>
                   </div>
-                ) : (
-                  <div className="text-xs font-mono text-cyber-text/60 space-y-2 py-1">
-                    <p className="text-[10px] leading-relaxed">
-                      Collect precise 21 joint landmark skeletons to compile clean training datasets for 5 target static gestures.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 pt-2 text-[10px]">
-                      {Object.entries(sampleCounts).map(([name, count]) => (
-                        <div key={name} className="flex justify-between bg-black/25 px-2 py-1 rounded border border-cyber-border/5">
-                          <span>{name}</span>
-                          <span className="text-cyber-cyan font-bold">{count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
+            </div>
 
-              {/* Coordinates Viewer Panel */}
-              <CoordinateViewer landmarksData={handsData} />
+            {/* Collapsible Developer Utilities */}
+            <div className="w-full mt-2">
+              <button
+                onClick={() => setShowDevTools(!showDevTools)}
+                className={`w-full py-2.5 rounded-lg font-orbitron text-xs tracking-widest border transition-all duration-300 flex items-center justify-center gap-2 ${
+                  showDevTools 
+                    ? 'bg-cyber-cyan/15 text-cyber-cyan border-cyber-cyan/45 shadow-[0_0_15px_rgba(102,252,241,0.2)]'
+                    : 'bg-cyber-panel/40 text-cyber-text/50 border-cyber-border/10 hover:border-cyber-border/30 hover:text-cyber-text/85'
+                }`}
+              >
+                <Settings className={`w-3.5 h-3.5 ${showDevTools ? 'animate-spin' : ''}`} />
+                {showDevTools ? 'COLLAPSE DEVELOPER SUITE' : 'EXPAND DEVELOPER LAB SUITE'}
+              </button>
+
+              <AnimatePresence>
+                {showDevTools && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="overflow-hidden mt-4"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 rounded-xl border border-cyber-border/25 bg-black/35 glass-panel">
+                      {/* Engine controls */}
+                      <div className="space-y-4">
+                        <h4 className="font-orbitron text-[10px] font-bold text-cyber-cyan tracking-wider flex items-center gap-1.5 uppercase pb-1.5 border-b border-cyber-border/10">
+                          <Cpu className="w-3.5 h-3.5" /> Pipeline Settings
+                        </h4>
+                        <div>
+                          <label className="text-[9px] text-cyber-text/45 font-mono uppercase block mb-1">Processing Mode</label>
+                          <div className="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded border border-cyber-border/10">
+                            <button
+                              onClick={() => setProcessingMode('client')}
+                              className={`py-1 rounded font-orbitron text-[9px] tracking-wider transition-all flex items-center justify-center gap-1 ${
+                                processingMode === 'client'
+                                  ? 'bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/35'
+                                  : 'text-cyber-text/55 border border-transparent hover:text-cyber-text/80'
+                              }`}
+                            >
+                              CLIENT (JS WASM)
+                            </button>
+                            <button
+                              onClick={() => setProcessingMode('server')}
+                              className={`py-1 rounded font-orbitron text-[9px] tracking-wider transition-all flex items-center justify-center gap-1 ${
+                                processingMode === 'server'
+                                  ? 'bg-cyber-rose/20 text-cyber-rose border border-cyber-rose/35'
+                                  : 'text-cyber-text/55 border border-transparent hover:text-cyber-text/80'
+                              }`}
+                            >
+                              SERVER (FASTAPI)
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5 font-mono text-[9px] text-cyber-text/70">
+                          <label className="text-[9px] text-cyber-text/45 uppercase block">Render Options</label>
+                          <div className="flex justify-between items-center">
+                            <span>Draw Hand Connections</span>
+                            <button onClick={() => setShowConnections(!showConnections)} className={`w-8 h-4 rounded-full p-0.5 ${showConnections ? 'bg-cyber-cyan' : 'bg-black/60 border border-cyber-border/20'}`}>
+                              <div className={`w-3 h-3 rounded-full bg-black transition-transform ${showConnections ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                            </button>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Draw Hand Labels</span>
+                            <button onClick={() => setShowLabels(!showLabels)} className={`w-8 h-4 rounded-full p-0.5 ${showLabels ? 'bg-cyber-cyan' : 'bg-black/60 border border-cyber-border/20'}`}>
+                              <div className={`w-3 h-3 rounded-full bg-black transition-transform ${showLabels ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dataset recorder */}
+                      <div className="space-y-3">
+                        <h4 className="font-orbitron text-[10px] font-bold text-cyber-amber tracking-wider flex items-center gap-1.5 uppercase pb-1.5 border-b border-cyber-border/10">
+                          <Database className="w-3.5 h-3.5" /> Dataset Recorder
+                        </h4>
+                        <div>
+                          <label className="text-[9px] text-cyber-text/45 font-mono uppercase block mb-1">Target Label</label>
+                          <div className="grid grid-cols-2 gap-1 bg-black/45 p-1 rounded border border-cyber-border/10">
+                            {['Thumbs Up', 'Peace', 'Stop Palm', 'Fist', 'OK Sign'].map((gesture) => {
+                              const isActive = selectedGesture === gesture;
+                              return (
+                                <button
+                                  key={gesture}
+                                  onClick={() => setSelectedGesture(gesture)}
+                                  className={`py-1 rounded font-orbitron text-[8px] text-left px-1.5 tracking-wider transition-all flex items-center justify-between border ${
+                                    isActive
+                                      ? 'bg-cyber-amber/20 text-cyber-amber border-cyber-amber/35'
+                                      : 'text-cyber-text/40 border-transparent hover:text-cyber-text/75'
+                                  }`}
+                                >
+                                  <span>{gesture}</span>
+                                  <span className="font-mono text-[7px] bg-black/30 px-0.5 rounded text-cyber-text/45">{sampleCounts[gesture] || 0}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-1.5 pt-1">
+                          <button
+                            onClick={handleSaveSample}
+                            disabled={handsData.length === 0 || isRecordingContinuous}
+                            className={`py-1.5 rounded font-orbitron text-[8px] font-bold tracking-wider border ${
+                              handsData.length > 0 && !isRecordingContinuous
+                                ? 'border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black'
+                                : 'text-cyber-text/25 border-cyber-border/5 cursor-not-allowed'
+                            }`}
+                          >
+                            SNAPSHOT [SPACE]
+                          </button>
+                          <button
+                            onClick={() => setIsRecordingContinuous(!isRecordingContinuous)}
+                            disabled={handsData.length === 0}
+                            className={`py-1.5 rounded font-orbitron text-[8px] font-bold tracking-wider border ${
+                              handsData.length > 0
+                                ? isRecordingContinuous
+                                  ? 'bg-cyber-rose text-black border-cyber-rose'
+                                  : 'border-cyber-rose text-cyber-rose hover:bg-cyber-rose hover:text-black'
+                                : 'text-cyber-text/25 border-cyber-border/5 cursor-not-allowed'
+                            }`}
+                          >
+                            {isRecordingContinuous ? 'STOP RECORD' : 'AUTO RECORD [R]'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Coordinates viewer */}
+                      <div className="flex flex-col">
+                        <h4 className="font-orbitron text-[10px] font-bold text-cyber-rose tracking-wider flex items-center gap-1.5 uppercase pb-1.5 border-b border-cyber-border/10 mb-2">
+                          <Code className="w-3.5 h-3.5" /> Coordinates Extractor
+                        </h4>
+                        <div className="flex-1 max-h-[140px] overflow-hidden">
+                          <CoordinateViewer landmarksData={handsData} />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         ) : (

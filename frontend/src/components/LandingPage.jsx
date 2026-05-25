@@ -9,20 +9,28 @@ export default function LandingPage({ onEnterDashboard }) {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.1,
+        staggerChildren: 0.1,
+        delayChildren: 0.05,
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 }
+      transition: { type: "spring", stiffness: 120, damping: 14 }
     }
   };
+
+  const cardHoverConfig = (neonColor, shadowOpacity) => ({
+    y: -8,
+    scale: 1.02,
+    borderColor: neonColor,
+    boxShadow: `0 12px 30px -5px rgba(${shadowOpacity}, 0.25)`,
+    transition: { type: "spring", stiffness: 300, damping: 15 }
+  });
 
   return (
     <div className="min-h-[92vh] flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden">
@@ -98,9 +106,12 @@ export default function LandingPage({ onEnterDashboard }) {
           className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-20 text-left px-4"
         >
           {/* Card 1 */}
-          <div className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group hover:border-cyber-cyan/40 hover:shadow-[0_0_20px_rgba(102,252,241,0.05)] transition-all duration-300 overflow-hidden">
+          <motion.div 
+            whileHover={cardHoverConfig('rgba(102, 252, 241, 0.45)', '102, 252, 241')}
+            className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group overflow-hidden cursor-pointer select-none"
+          >
             <div className="absolute top-0 left-0 w-2 h-full bg-cyber-cyan opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="p-2.5 bg-cyber-cyan/10 rounded-lg w-fit text-cyber-cyan mb-4 group-hover:scale-110 transition-transform">
+            <div className="p-2.5 bg-cyber-cyan/10 rounded-lg w-fit text-cyber-cyan mb-4 group-hover:scale-110 transition-transform duration-300">
               <Cpu className="w-5 h-5" />
             </div>
             <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2.5 uppercase">
@@ -112,12 +123,15 @@ export default function LandingPage({ onEnterDashboard }) {
             <div className="mt-4 flex items-center gap-1.5 text-[9px] font-mono text-cyber-cyan">
               <ShieldCheck className="w-3.5 h-3.5" /> SECURE EDGE INFERENCE
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 2 */}
-          <div className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group hover:border-cyber-green/45 hover:shadow-[0_0_20px_rgba(0,255,136,0.05)] transition-all duration-300 overflow-hidden">
+          <motion.div 
+            whileHover={cardHoverConfig('rgba(0, 255, 136, 0.45)', '0, 255, 136')}
+            className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group overflow-hidden cursor-pointer select-none"
+          >
             <div className="absolute top-0 left-0 w-2 h-full bg-cyber-green opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="p-2.5 bg-cyber-green/10 rounded-lg w-fit text-cyber-green mb-4 group-hover:scale-110 transition-transform">
+            <div className="p-2.5 bg-cyber-green/10 rounded-lg w-fit text-cyber-green mb-4 group-hover:scale-110 transition-transform duration-300">
               <Zap className="w-5 h-5" />
             </div>
             <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2.5 uppercase">
@@ -129,12 +143,15 @@ export default function LandingPage({ onEnterDashboard }) {
             <div className="mt-4 flex items-center gap-1.5 text-[9px] font-mono text-cyber-green">
               <Activity className="w-3.5 h-3.5" /> REAL-TIME FPS OPTIMIZED
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 3 */}
-          <div className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group hover:border-cyber-rose/40 hover:shadow-[0_0_20px_rgba(255,0,127,0.05)] transition-all duration-300 overflow-hidden">
+          <motion.div 
+            whileHover={cardHoverConfig('rgba(255, 0, 127, 0.45)', '255, 0, 127')}
+            className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group overflow-hidden cursor-pointer select-none"
+          >
             <div className="absolute top-0 left-0 w-2 h-full bg-cyber-rose opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="p-2.5 bg-cyber-rose/10 rounded-lg w-fit text-cyber-rose mb-4 group-hover:scale-110 transition-transform">
+            <div className="p-2.5 bg-cyber-rose/10 rounded-lg w-fit text-cyber-rose mb-4 group-hover:scale-110 transition-transform duration-300">
               <Code className="w-5 h-5" />
             </div>
             <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2.5 uppercase">
@@ -146,7 +163,7 @@ export default function LandingPage({ onEnterDashboard }) {
             <div className="mt-4 flex items-center gap-1.5 text-[9px] font-mono text-cyber-rose">
               <Terminal className="w-3.5 h-3.5" /> FULL DOCKER STACK DEPLOYED
             </div>
-          </div>
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>

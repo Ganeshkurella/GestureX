@@ -110,8 +110,8 @@ export default function WebcamPanel({
       const isRightHand = hand.label === 'Right';
       const themeColor = isRightHand ? '#00ff88' : '#66fcf1';
       
-      // 1. Calculate & Draw Bounding Box with Cyberpunk corners
-      const xs = hand.landmarks.map(lm => lm.x * canvas.width);
+      // 1. Calculate & Draw Bounding Box with Cyberpunk corners (Mirroring X: 1.0 - x)
+      const xs = hand.landmarks.map(lm => (1.0 - lm.x) * canvas.width);
       const ys = hand.landmarks.map(lm => lm.y * canvas.height);
       const minX = Math.min(...xs) - 20;
       const maxX = Math.max(...xs) + 20;
@@ -161,7 +161,7 @@ export default function WebcamPanel({
       ctx.fillStyle = isRightHand ? 'rgba(0, 255, 136, 0.03)' : 'rgba(102, 252, 241, 0.03)';
       ctx.fillRect(minX, minY, boxWidth, boxHeight);
 
-      // Label Bounding Box
+      // Label Bounding Box (drawn normally left-to-right, un-mirrored)
       ctx.fillStyle = themeColor;
       ctx.font = 'bold 9px Orbitron, sans-serif';
       ctx.fillText(`TARGET LOCKED: ${hand.label.toUpperCase()}`, minX, minY - 8);
@@ -169,7 +169,7 @@ export default function WebcamPanel({
       // 2. Draw Palm Radar Sweep centered at middle finger MCP (Landmark 9)
       const palmMCP = hand.landmarks[9];
       if (palmMCP) {
-        const cx = palmMCP.x * canvas.width;
+        const cx = (1.0 - palmMCP.x) * canvas.width;
         const cy = palmMCP.y * canvas.height;
         const radius = 30;
 
@@ -203,8 +203,8 @@ export default function WebcamPanel({
           const ptA = hand.landmarks[start];
           const ptB = hand.landmarks[end];
           if (ptA && ptB) {
-            ctx.moveTo(ptA.x * canvas.width, ptA.y * canvas.height);
-            ctx.lineTo(ptB.x * canvas.width, ptB.y * canvas.height);
+            ctx.moveTo((1.0 - ptA.x) * canvas.width, ptA.y * canvas.height);
+            ctx.lineTo((1.0 - ptB.x) * canvas.width, ptB.y * canvas.height);
           }
         });
         ctx.stroke();
@@ -213,8 +213,11 @@ export default function WebcamPanel({
 
       // 4. Draw landmark points
       hand.landmarks.forEach((lm, idx) => {
+        const cx = (1.0 - lm.x) * canvas.width;
+        const cy = lm.y * canvas.height;
+        
         ctx.beginPath();
-        ctx.arc(lm.x * canvas.width, lm.y * canvas.height, idx === 0 ? 6 : 3.5, 0, 2 * Math.PI);
+        ctx.arc(cx, cy, idx === 0 ? 6 : 3.5, 0, 2 * Math.PI);
         ctx.fillStyle = idx === 0 ? '#ffffff' : themeColor;
         ctx.shadowBlur = 6;
         ctx.shadowColor = themeColor;
@@ -223,7 +226,7 @@ export default function WebcamPanel({
         // Rings on tips
         if ([4, 8, 12, 16, 20].includes(idx)) {
           ctx.beginPath();
-          ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 7, 0, 2 * Math.PI);
+          ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = 1.2;
           ctx.stroke();
@@ -234,12 +237,14 @@ export default function WebcamPanel({
       // 5. Draw labels text
       if (showLabels && hand.landmarks[9]) {
         const mc = hand.landmarks[9];
+        const cx = (1.0 - mc.x) * canvas.width;
+        const cy = mc.y * canvas.height;
         ctx.fillStyle = '#ffffff';
         ctx.font = '9px Orbitron, sans-serif';
         ctx.fillText(
           `${hand.label.toUpperCase()} HAND [CONF: ${(hand.confidence || 1.0).toFixed(2)}]`,
-          mc.x * canvas.width - 45,
-          mc.y * canvas.height - 18
+          cx - 45,
+          cy - 18
         );
       }
     });
@@ -503,7 +508,7 @@ export default function WebcamPanel({
 
         <canvas
           ref={canvasRef}
-          className="absolute w-full h-full object-cover scale-x-[-1] z-10 pointer-events-none"
+          className="absolute w-full h-full object-cover z-10 pointer-events-none"
         />
 
         {/* HUD control bar (Visible unless fullscreen is handled) */}
