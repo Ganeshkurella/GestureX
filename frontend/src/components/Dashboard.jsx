@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Settings, Eye, HelpCircle, Code, Server, Play, StopCircle, RefreshCw, Cpu, Layers, Database, Disc, Circle } from 'lucide-react';
+import { Settings, Eye, HelpCircle, Code, Server, Play, StopCircle, RefreshCw, Cpu, Layers, Database, Disc, Circle, Zap } from 'lucide-react';
 import WebcamPanel from './WebcamPanel';
 import StatusIndicator from './StatusIndicator';
 import CoordinateViewer from './CoordinateViewer';
