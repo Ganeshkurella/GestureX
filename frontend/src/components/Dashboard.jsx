@@ -751,16 +751,19 @@ export default function Dashboard({ onBackToLanding }) {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-[14px] font-sans leading-relaxed text-cyber-text/90">
-              <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[14px] font-sans leading-relaxed text-cyber-text/90">
+              {/* Card 1: HOW MEDIAPIPE HANDS WORKS */}
+              <div className="glass-panel p-6 rounded-xl border border-cyber-cyan/15 hover:border-cyber-cyan/35 shadow-[0_0_15px_rgba(102,252,241,0.02)] transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-cyan opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div>
-                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
-                    <Cpu className="w-3.5 h-3.5" /> 1. HOW MEDIAPIPE HANDS WORKS
+                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-4 flex items-center gap-2 text-sm md:text-base">
+                    <span className="p-1.5 bg-cyber-cyan/10 rounded-md text-cyber-cyan flex items-center justify-center"><Cpu className="w-4 h-4" /></span>
+                    1. HOW MEDIAPIPE HANDS WORKS
                   </h3>
-                  <p className="mb-4 text-cyber-text/70">
+                  <p className="mb-4 text-cyber-text/70 text-xs md:text-sm">
                     MediaPipe Hand tracking is a hybrid, multi-stage machine learning system:
                   </p>
-                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80">
+                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80 text-xs md:text-sm">
                     <li>
                       <strong className="text-white">Palm Detection Model (BlazePalm):</strong> First runs a Single-Shot Detector (SSD) model optimized for hand localization across the entire frame. This is extremely fast and avoids scanning the full image repeatedly.
                     </li>
@@ -772,15 +775,20 @@ export default function Dashboard({ onBackToLanding }) {
                     </li>
                   </ul>
                 </div>
+              </div>
 
+              {/* Card 2: THE 21 HAND LANDMARKS */}
+              <div className="glass-panel p-6 rounded-xl border border-cyber-cyan/15 hover:border-cyber-cyan/35 shadow-[0_0_15px_rgba(102,252,241,0.02)] transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-cyan opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div>
-                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5" /> 2. THE 21 HAND LANDMARKS
+                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-4 flex items-center gap-2 text-sm md:text-base">
+                    <span className="p-1.5 bg-cyber-cyan/10 rounded-md text-cyber-cyan flex items-center justify-center"><Layers className="w-4 h-4" /></span>
+                    2. THE 21 HAND LANDMARKS
                   </h3>
-                  <p className="mb-4 text-cyber-text/70">
+                  <p className="mb-4 text-cyber-text/70 text-xs md:text-sm">
                     The 21 hand landmarks map the anatomical skeletal junctions of the human hand:
                   </p>
-                  <ul className="list-disc pl-5 mt-3 space-y-2 text-cyber-text/80">
+                  <ul className="list-disc pl-5 mt-3 space-y-2 text-cyber-text/80 text-xs md:text-sm">
                     <li><strong className="text-white">Landmark 0:</strong> Wrist base</li>
                     <li><strong className="text-white">Landmarks 1-4:</strong> Thumb <span className="text-cyber-text/50">(Carpometacarpal CMC, Metacarpophalangeal MCP, Interphalangeal IP, Tip)</span></li>
                     <li><strong className="text-white">Landmarks 5-8:</strong> Index Finger <span className="text-cyber-text/50">(MCP, Proximal Interphalangeal PIP, Distal Interphalangeal DIP, Tip)</span></li>
@@ -791,15 +799,18 @@ export default function Dashboard({ onBackToLanding }) {
                 </div>
               </div>
 
-              <div className="space-y-8">
+              {/* Card 3: THE COORDINATE SPACE */}
+              <div className="glass-panel p-6 rounded-xl border border-cyber-rose/15 hover:border-cyber-rose/35 shadow-[0_0_15px_rgba(255,0,127,0.02)] transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-rose opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div>
-                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
-                    <Code className="w-3.5 h-3.5" /> 3. THE COORDINATE SPACE
+                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-4 flex items-center gap-2 text-sm md:text-base">
+                    <span className="p-1.5 bg-cyber-rose/10 rounded-md text-cyber-rose flex items-center justify-center"><Code className="w-4 h-4" /></span>
+                    3. THE COORDINATE SPACE
                   </h3>
-                  <p className="mb-4 text-cyber-text/70">
+                  <p className="mb-4 text-cyber-text/70 text-xs md:text-sm">
                     MediaPipe Hand Landmarker outputs normalized 3D Cartesian coordinates:
                   </p>
-                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80">
+                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80 text-xs md:text-sm">
                     <li>
                       <strong className="text-white">X and Y:</strong> Represent standard pixel columns and rows, normalized to the range <code className="bg-black/40 px-1.5 py-0.5 rounded text-cyber-cyan font-mono text-xs">[0.0, 1.0]</code>.
                       <span className="block mt-1 text-cyber-text/60">
@@ -814,30 +825,40 @@ export default function Dashboard({ onBackToLanding }) {
                     </li>
                   </ul>
                 </div>
+              </div>
 
+              {/* Card 4: WHY COORDINATES ARE ULTRA-EFFICIENT */}
+              <div className="glass-panel p-6 rounded-xl border border-cyber-rose/15 hover:border-cyber-rose/35 shadow-[0_0_15px_rgba(255,0,127,0.02)] transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-rose opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div>
-                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5" /> 4. WHY COORDINATES ARE ULTRA-EFFICIENT
+                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-4 flex items-center gap-2 text-sm md:text-base">
+                    <span className="p-1.5 bg-cyber-rose/10 rounded-md text-cyber-rose flex items-center justify-center"><Zap className="w-4 h-4" /></span>
+                    4. WHY COORDINATES ARE ULTRA-EFFICIENT
                   </h3>
-                  <p className="mb-4 text-cyber-text/80 leading-relaxed">
+                  <p className="mb-4 text-cyber-text/80 leading-relaxed text-xs md:text-sm">
                     Traditional computer vision requires feeding raw video pixels (e.g., <code className="bg-black/40 px-1.5 py-0.5 rounded text-cyber-rose font-mono text-xs">640 &times; 480 &times; 3 = 921,600</code> values) directly into deep convolutional networks. This is highly resource-intensive and slow.
                   </p>
-                  <p className="text-cyber-text/80 leading-relaxed">
+                  <p className="text-cyber-text/80 leading-relaxed text-xs md:text-sm">
                     Landmark-based systems reduce this complexity by extracting just <strong className="text-white">21 landmarks &times; 3 coordinates (x, y, z) = 63 numerical values</strong>. This represents a massive <strong className="text-cyber-green font-bold">99.99% data compression ratio</strong>.
                   </p>
-                  <p className="mt-4 text-cyber-text/80 leading-relaxed">
+                  <p className="mt-4 text-cyber-text/80 leading-relaxed text-xs md:text-sm">
                     Training a lightweight classifier (e.g. SVM or simple neural network) on just 63 inputs consumes minimal memory, achieves execution speeds exceeding 1,000 FPS, and runs perfectly on edge devices.
                   </p>
                 </div>
+              </div>
 
+              {/* Card 5: PATH TO GESTURE CLASSIFICATION (PHASE 2) */}
+              <div className="glass-panel p-6 rounded-xl border border-cyber-green/15 hover:border-cyber-green/35 shadow-[0_0_15px_rgba(0,255,136,0.02)] transition-all duration-300 relative overflow-hidden group md:col-span-2">
+                <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-green opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div>
-                  <h3 className="text-cyber-green font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
-                    <Play className="w-3.5 h-3.5" /> 5. PATH TO GESTURE CLASSIFICATION (PHASE 2)
+                  <h3 className="text-cyber-green font-orbitron font-bold tracking-wider mb-4 flex items-center gap-2 text-sm md:text-base">
+                    <span className="p-1.5 bg-cyber-green/10 rounded-md text-cyber-green flex items-center justify-center"><Play className="w-4 h-4" /></span>
+                    5. PATH TO GESTURE CLASSIFICATION (PHASE 2)
                   </h3>
-                  <p className="mb-4 text-cyber-text/70">
+                  <p className="mb-4 text-cyber-text/70 text-xs md:text-sm">
                     In the next phase, we will feed these 63 coordinates into machine learning models to predict active gesture labels:
                   </p>
-                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80">
+                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80 text-xs md:text-sm">
                     <li>
                       <strong className="text-white">Features Preprocessing:</strong> Translate coordinates relative to landmark 0 (wrist base) for translation-invariance. Normalize all distances by hand size to achieve scale-invariance.
                     </li>
