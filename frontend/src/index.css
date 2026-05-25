@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cyber-bg text-cyber-text font-sans antialiased overflow-x-hidden;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(26, 11, 46, 0.6) 0px, transparent 50%),
+      radial-gradient(at 50% 0%, rgba(10, 37, 64, 0.4) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(77, 10, 54, 0.3) 0px, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(10, 8, 20, 0.9);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(102, 252, 241, 0.3);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 252, 241, 0.6);
+  }
+}
+
+/* Custom Cyberpunk Styling Utilities */
+
+.neon-text-cyan {
+  color: #66fcf1;
+  text-shadow: 0 0 5px rgba(102, 252, 241, 0.5), 0 0 10px rgba(102, 252, 241, 0.3);
+}
+
+.neon-text-rose {
+  color: #ff007f;
+  text-shadow: 0 0 5px rgba(255, 0, 127, 0.5), 0 0 10px rgba(255, 0, 127, 0.3);
+}
+
+.neon-text-green {
+  color: #00ff88;
+  text-shadow: 0 0 5px rgba(0, 255, 136, 0.5), 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.neon-text-amber {
+  color: #ff9f00;
+  text-shadow: 0 0 5px rgba(255, 159, 0, 0.5), 0 0 10px rgba(255, 159, 0, 0.3);
+}
+
+.glass-panel {
+  background: rgba(10, 8, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(102, 252, 241, 0.1);
+}
+
+.glass-panel-glow {
+  background: rgba(10, 8, 20, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(102, 252, 241, 0.25);
+  box-shadow: 0 0 15px rgba(102, 252, 241, 0.15);
+}
+
+.cyber-grid {
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(102, 252, 241, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(102, 252, 241, 0.02) 1px, transparent 1px);
+}
+
+/* Animations custom classes */
+.scanning-bar {
+  background: linear-gradient(to bottom, transparent, rgba(102, 252, 241, 0.5), transparent);
+  box-shadow: 0 0 8px rgba(102, 252, 241, 0.8);
+}

@@ -1,0 +1,31 @@
+# Python virtual environments & compiled caches
+backend/venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+.venv/
+venv/
+ENV/
+
+# Node dependencies & production builds
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local environment configs & logs
+.env
+.env.*
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and system files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
