@@ -1,7 +1,20 @@
 import axios from 'axios';
 
-// Base URL can be configured via Vite env variables, fallback to local host
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
+// Dynamically determine the API base URL based on origin hostname
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  const hostname = window.location.hostname;
+  
+  // Vercel deployment: proxy via the same-origin route /_/backend/api
+  if (hostname.endsWith('.vercel.app') || window.location.pathname.startsWith('/_/')) {
+    return `${window.location.protocol}//${window.location.host}/_/backend/api`;
+  }
+  
+  // Local / LAN development
+  return `${window.location.protocol}//${hostname}:8000/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Create configured Axios instance
 const apiClient = axios.create({

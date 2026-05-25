@@ -446,12 +446,29 @@ export default function WebcamPanel({
       className={`glass-panel border overflow-hidden relative shadow-glass transition-all duration-300 ${
         isFullscreen 
           ? 'fixed inset-0 z-50 bg-black' 
-          : 'rounded-xl border-cyber-border/40 aspect-video bg-black/60'
+          : 'rounded-xl border-cyber-border/40 aspect-[4/3] sm:aspect-video bg-black/60 max-h-[35vh] sm:max-h-none'
       }`}
     >
       {/* Dynamic scan line bar (Only when camera active) */}
       {cameraActive && (
         <div className="absolute top-0 left-0 w-full h-[2px] scanning-bar absolute top-0 left-0 animate-scan z-10 pointer-events-none"></div>
+      )}
+
+      {/* Floating HUD overlay for non-fullscreen mode (especially for mobile viewports) */}
+      {!isFullscreen && cameraActive && (
+        <div className="absolute bottom-3 left-3 z-20 pointer-events-none flex flex-col gap-1 max-w-[calc(100%-1.5rem)]">
+          <div className="glass-panel border border-cyber-cyan/35 bg-black/75 px-3 py-1.5 rounded font-mono text-[9px] text-cyber-cyan/95 flex items-center gap-2 shadow-[0_0_10px_rgba(0,240,255,0.15)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse"></span>
+            <span className="font-orbitron font-bold tracking-wider text-[10px] uppercase text-white">
+              {activePrediction !== 'None' ? activePrediction : 'NO GESTURE'}
+            </span>
+            {activePrediction !== 'None' && (
+              <span className="text-cyber-cyan bg-cyber-cyan/15 border border-cyber-cyan/30 px-1 rounded font-sans font-bold text-[9px]">
+                {(predictionConfidence * 100).toFixed(0)}%
+              </span>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Fullscreen HUD Overlays */}
@@ -610,7 +627,7 @@ export default function WebcamPanel({
           </p>
           <p className="text-[10px] text-cyber-text/50 font-mono max-w-[280px]">
             {wsStatus === 'error' 
-              ? 'Verification failure at ws://127.0.0.1:8000. Launch backend server to restore services.' 
+              ? `Verification failure at ws://${window.location.hostname || '127.0.0.1'}:8000. Launch backend server to restore services.` 
               : 'Piping frame buffers to endpoint.'}
           </p>
         </div>

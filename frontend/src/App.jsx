@@ -114,7 +114,7 @@ function Bootloader({ onComplete }) {
         </div>
 
         <div className="text-[9px] text-cyber-text/30 flex items-center justify-between">
-          <span>HOST: LOCAL_HOST_127.0.0.1</span>
+          <span>HOST: {window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'LOCAL_HOST_127.0.0.1' : `LAN_HOST_${window.location.hostname.toUpperCase().replace(/\./g, '_')}`}</span>
           <span className="flex items-center gap-1"><Shield className="w-2.5 h-2.5" /> SECURE HANDSHAKE</span>
         </div>
       </div>

@@ -252,10 +252,71 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
   // Circular gauge definitions
   const radius = 32;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (predictionConfidence * circumference);
+  const renderActivePredictionCard = (isMobileLayout = false) => {
+    return (
+      <div className={`flex items-center gap-4 bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/15 relative overflow-hidden ${isMobileLayout ? 'mb-4 lg:hidden' : 'hidden lg:flex'}`}>
+        <div className="absolute top-1 right-2 flex items-center gap-1">
+          <span className="text-[8px] font-mono text-cyber-text/40">LATENCY:</span>
+          <span className={`text-[8px] font-mono font-bold ${inferenceLatency > 0 ? 'text-cyber-green' : 'text-cyber-text/30'}`}>
+            {inferenceLatency > 0 ? `${inferenceLatency}ms` : '--'}
+          </span>
+        </div>
+
+        {/* Circular SVG Gauge */}
+        <div className="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
+          <svg className="w-full h-full transform -rotate-90">
+            {/* Gray track */}
+            <circle
+              cx="40"
+              cy="40"
+              r={radius}
+              stroke="rgba(197, 198, 199, 0.08)"
+              strokeWidth="5"
+              fill="transparent"
+            />
+            {/* Neon indicator circle */}
+            <motion.circle
+              cx="40"
+              cy="40"
+              r={radius}
+              stroke={activeTheme.stroke}
+              strokeWidth="5"
+              fill="transparent"
+              strokeDasharray={circumference}
+              animate={{ strokeDashoffset }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            />
+          </svg>
+          <div className="absolute font-orbitron text-[10px] font-bold text-white text-center">
+            <div className="text-[12px]">{(predictionConfidence * 100).toFixed(0)}%</div>
+            <div className="text-[7px] text-cyber-text/40 tracking-wider">CONF</div>
+          </div>
+        </div>
+
+        {/* Classification Text */}
+        <div className="flex-1 flex flex-col justify-center font-sans">
+          <span className="text-[8px] text-cyber-text/40 font-mono tracking-wider block uppercase">Active System Inference</span>
+          <h2 className={`text-xl md:text-2xl font-black font-orbitron tracking-wider mt-0.5 ${activeTheme.color} drop-shadow-[0_0_12px_rgba(0,240,255,0.2)]`}>
+            {activePrediction.toUpperCase()}
+          </h2>
+          {/* Live AI thinking telemetry */}
+          <div className="mt-1 text-[9px] font-mono text-cyber-cyan/70 animate-pulse flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-ping"></span>
+            <span>
+              {handsData.length > 0 
+                ? predictionConfidence >= 0.7 
+                  ? "TARGET LOCKED // CONFIDENCE STABILIZED" 
+                  : "ANALYZING SKELETAL LANDMARK PATTERNS..." 
+                : "SCANNING INTEGRITY BUFFER..."}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-6 px-4">
+    <div className="w-full max-w-6xl mx-auto py-3 px-2 sm:py-6 sm:px-4">
       {/* Header Panel */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-cyber-border/20 pb-4">
         <div>
@@ -324,10 +385,10 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6"
           >
             {/* Left: Webcam Stream Panel & Telemetry Indicator (span 2 cols) */}
-            <div className="lg:col-span-2 flex flex-col gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-4 sm:gap-6">
               <WebcamPanel
                 processingMode={processingMode}
                 showConnections={showConnections}
@@ -340,6 +401,9 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
                 activePrediction={activePrediction}
                 predictionConfidence={predictionConfidence}
               />
+
+              {/* Render Active Recognition Card on mobile viewports */}
+              {renderActivePredictionCard(true)}
 
               {/* Status indicator underneath */}
               <StatusIndicator
@@ -365,64 +429,7 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
                 </h3>
 
                 {/* Main recognition ring and label card */}
-                <div className="flex items-center gap-4 bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/15 relative overflow-hidden">
-                  <div className="absolute top-1 right-2 flex items-center gap-1">
-                    <span className="text-[8px] font-mono text-cyber-text/40">LATENCY:</span>
-                    <span className={`text-[8px] font-mono font-bold ${inferenceLatency > 0 ? 'text-cyber-green' : 'text-cyber-text/30'}`}>
-                      {inferenceLatency > 0 ? `${inferenceLatency}ms` : '--'}
-                    </span>
-                  </div>
-
-                  {/* Circular SVG Gauge */}
-                  <div className="relative w-20 h-20 flex items-center justify-center">
-                    <svg className="w-full h-full transform -rotate-90">
-                      {/* Gray track */}
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r={radius}
-                        stroke="rgba(197, 198, 199, 0.08)"
-                        strokeWidth="5"
-                        fill="transparent"
-                      />
-                      {/* Neon indicator circle */}
-                      <motion.circle
-                        cx="40"
-                        cy="40"
-                        r={radius}
-                        stroke={activeTheme.stroke}
-                        strokeWidth="5"
-                        fill="transparent"
-                        strokeDasharray={circumference}
-                        animate={{ strokeDashoffset }}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
-                      />
-                    </svg>
-                    <div className="absolute font-orbitron text-[10px] font-bold text-white text-center">
-                      <div className="text-[12px]">{(predictionConfidence * 100).toFixed(0)}%</div>
-                      <div className="text-[7px] text-cyber-text/40 tracking-wider">CONF</div>
-                    </div>
-                  </div>
-
-                  {/* Classification Text */}
-                  <div className="flex-1 flex flex-col justify-center font-sans">
-                    <span className="text-[8px] text-cyber-text/40 font-mono tracking-wider block uppercase">Active System Inference</span>
-                    <h2 className={`text-2xl font-black font-orbitron tracking-wider mt-0.5 ${activeTheme.color} drop-shadow-[0_0_12px_rgba(0,240,255,0.2)]`}>
-                      {activePrediction.toUpperCase()}
-                    </h2>
-                    {/* Live AI thinking telemetry */}
-                    <div className="mt-1 text-[9px] font-mono text-cyber-cyan/70 animate-pulse flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-ping"></span>
-                      <span>
-                        {handsData.length > 0 
-                          ? predictionConfidence >= 0.7 
-                            ? "TARGET LOCKED // CONFIDENCE STABILIZED" 
-                            : "ANALYZING SKELETAL LANDMARK PATTERNS..." 
-                          : "SCANNING INTEGRITY BUFFER..."}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                {renderActivePredictionCard(false)}
 
                 {/* Telemetry charts row */}
                 <div className="grid grid-cols-2 gap-3">

@@ -67,7 +67,7 @@ export default function LandingPage({ onEnterDashboard }) {
         {/* Title */}
         <motion.h1 
           variants={itemVariants}
-          className="text-5xl md:text-7xl font-black font-orbitron tracking-widest mb-4 relative select-none text-white leading-none uppercase"
+          className="text-3xl sm:text-5xl md:text-7xl font-black font-orbitron tracking-wider sm:tracking-widest mb-4 relative select-none text-white leading-none uppercase"
         >
           GESTURE
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-teal to-cyber-green drop-shadow-[0_0_15px_rgba(0,240,255,0.25)] font-black">

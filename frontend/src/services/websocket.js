@@ -2,8 +2,17 @@
  * Service to handle WebSocket connection with FastAPI backend for server-side hand tracking.
  */
 export class TrackingWebSocketService {
-  constructor(url = "ws://127.0.0.1:8000/ws/stream") {
-    this.url = url;
+  constructor(url) {
+    const getWSBaseUrl = () => {
+      const hostname = window.location.hostname;
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      if (hostname.endsWith('.vercel.app')) {
+        return `${protocol}//${window.location.host}/_/backend/ws/stream`;
+      }
+      return `${protocol}//${hostname}:8000/ws/stream`;
+    };
+
+    this.url = url || getWSBaseUrl();
     this.ws = null;
     this.onMessageCallback = null;
     this.onStatusChangeCallback = null;

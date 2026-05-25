@@ -5,9 +5,20 @@ import { useEffect, useRef, useState, useCallback } from 'react';
  * Provides connection state, automatic reconnection with exponential backoff,
  * frame throughput stats, and round-trip latency calculations.
  */
-export function useWebsocket(url = "ws://127.0.0.1:8000/ws/stream") {
+export function useWebsocket(url) {
   const [status, setStatus] = useState('disconnected'); // 'disconnected' | 'connecting' | 'connected' | 'error'
   const [latency, setLatency] = useState(0);
+
+  const getWSBaseUrl = () => {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    if (hostname.endsWith('.vercel.app')) {
+      return `${protocol}//${window.location.host}/_/backend/ws/stream`;
+    }
+    return `${protocol}//${hostname}:8000/ws/stream`;
+  };
+
+  const wsUrl = url || getWSBaseUrl();
 
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
@@ -36,10 +47,10 @@ export function useWebsocket(url = "ws://127.0.0.1:8000/ws/stream") {
     if (onStatusChange) onStatusChange('connecting');
 
     try {
-      wsRef.current = new WebSocket(url);
+      wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
-        console.log("WebSocket connected to:", url);
+        console.log("WebSocket connected to:", wsUrl);
         setStatus('connected');
         if (onStatusChangeRef.current) onStatusChangeRef.current('connected');
         reconnectAttemptsRef.current = 0; // reset attempts
@@ -93,7 +104,7 @@ export function useWebsocket(url = "ws://127.0.0.1:8000/ws/stream") {
       setStatus('error');
       if (onStatusChange) onStatusChange('error');
     }
-  }, [url]);
+  }, [wsUrl]);
 
   const disconnect = useCallback(() => {
     shouldReconnectRef.current = false;
