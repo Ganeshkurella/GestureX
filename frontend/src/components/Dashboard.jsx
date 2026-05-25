@@ -253,6 +253,7 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
   const radius = 32;
   const circumference = 2 * Math.PI * radius;
   const renderActivePredictionCard = (isMobileLayout = false) => {
+    const strokeDashoffset = circumference - (predictionConfidence * circumference);
     return (
       <div className={`flex items-center gap-4 bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/15 relative overflow-hidden ${isMobileLayout ? 'mb-4 lg:hidden' : 'hidden lg:flex'}`}>
         <div className="absolute top-1 right-2 flex items-center gap-1">

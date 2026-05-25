@@ -129,7 +129,7 @@ function App() {
   const shouldScroll = view === 'dashboard' && isAdvancedMode;
 
   return (
-    <div className={`${shouldScroll ? 'min-h-screen' : 'h-screen overflow-hidden'} text-cyber-text bg-cyber-bg relative flex flex-col justify-between overflow-x-hidden font-sans antialiased selection:bg-cyber-cyan/20 selection:text-cyber-cyan`}>
+    <div className={`${shouldScroll ? 'min-h-screen' : 'min-h-screen md:h-screen md:overflow-hidden'} text-cyber-text bg-cyber-bg relative flex flex-col justify-between overflow-x-hidden font-sans antialiased selection:bg-cyber-cyan/20 selection:text-cyber-cyan`}>
       
       {/* Background utilities */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">

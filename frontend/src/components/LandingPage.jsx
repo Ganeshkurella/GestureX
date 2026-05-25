@@ -25,7 +25,7 @@ export default function LandingPage({ onEnterDashboard }) {
 
   return (
     <div 
-      className="h-full flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden select-none"
+      className="min-h-screen md:h-full w-full flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden select-none"
     >
       
       {/* 1. Ambient Background Glows */}
@@ -47,6 +47,8 @@ export default function LandingPage({ onEnterDashboard }) {
         animate="visible"
         className="max-w-5xl w-full text-center relative z-10 flex flex-col items-center"
       >
+        {/* Centered Hero content on mobile (so project name is centered) */}
+        <div className="flex-grow flex flex-col items-center justify-center min-h-[70vh] md:min-h-0 py-8 md:py-0 w-full">
         {/* Top Tech Badge */}
         <motion.div 
           variants={itemVariants}
@@ -94,6 +96,8 @@ export default function LandingPage({ onEnterDashboard }) {
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </button>
         </motion.div>
+
+        </div>
  
         {/* Specs Highlights */}
         <motion.div 
