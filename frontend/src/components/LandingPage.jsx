@@ -104,22 +104,22 @@ export default function LandingPage({ onEnterDashboard }) {
           <div className="glass-panel p-4 rounded border border-cyber-border relative group hover:border-cyber-cyan/40 hover:shadow-[0_0_15px_rgba(0,240,255,0.03)] transition-all duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-cyan opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
-            <div className="flex items-center justify-between mb-2 border-b border-cyber-border/10 pb-1.5">
-              <span className="text-[9px] font-mono text-cyber-cyan tracking-wider flex items-center gap-1.5 uppercase">
+            <div className="flex items-center justify-between mb-2.5 border-b border-cyber-border/10 pb-1.5">
+              <span className="text-[11px] font-mono text-cyber-cyan tracking-wider flex items-center gap-1.5 uppercase">
                 <Cpu className="w-3.5 h-3.5" /> MODULE 01 // CV_SKEL
               </span>
-              <span className="text-[8px] bg-cyber-cyan/10 text-cyber-cyan px-1.5 rounded font-mono font-bold">ONLINE</span>
+              <span className="text-[9px] bg-cyber-cyan/10 text-cyber-cyan px-2 py-0.5 rounded font-mono font-bold">ONLINE</span>
             </div>
  
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
+            <h3 className="font-orbitron text-sm font-bold tracking-wider text-white mb-2 uppercase">
               21-Point Skeletal Mesh
             </h3>
-            <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
+            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
               Extracts high-fidelity Cartesian coordinates mapping wrists, joints, and fingertips in absolute depth space.
             </p>
             
             {/* Visual simulation bar */}
-            <div className="mt-3 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+            <div className="mt-3.5 w-full h-1 bg-black/40 rounded overflow-hidden relative">
               <div className="h-full bg-cyber-cyan/30 w-3/4 animate-pulse"></div>
             </div>
           </div>
@@ -128,22 +128,22 @@ export default function LandingPage({ onEnterDashboard }) {
           <div className="glass-panel p-4 rounded border border-cyber-border relative group hover:border-cyber-green/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.03)] transition-all duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-green opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
-            <div className="flex items-center justify-between mb-2 border-b border-cyber-border/10 pb-1.5">
-              <span className="text-[9px] font-mono text-cyber-green tracking-wider flex items-center gap-1.5 uppercase">
+            <div className="flex items-center justify-between mb-2.5 border-b border-cyber-border/10 pb-1.5">
+              <span className="text-[11px] font-mono text-cyber-green tracking-wider flex items-center gap-1.5 uppercase">
                 <Zap className="w-3.5 h-3.5" /> MODULE 02 // ACCEL_IF
               </span>
-              <span className="text-[8px] bg-cyber-green/10 text-cyber-green px-1.5 rounded font-mono font-bold">ACTIVE</span>
+              <span className="text-[9px] bg-cyber-green/10 text-cyber-green px-2 py-0.5 rounded font-mono font-bold">ACTIVE</span>
             </div>
  
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
+            <h3 className="font-orbitron text-sm font-bold tracking-wider text-white mb-2 uppercase">
               Lightweight Edge Inference
             </h3>
-            <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
+            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
               Processes 63-dimensional coordinate arrays natively on the client using optimized GPU WASM delegates.
             </p>
  
             {/* Visual simulation bar */}
-            <div className="mt-3 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+            <div className="mt-3.5 w-full h-1 bg-black/40 rounded overflow-hidden relative">
               <div className="h-full bg-cyber-green/30 w-5/6 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
             </div>
           </div>
@@ -152,17 +152,17 @@ export default function LandingPage({ onEnterDashboard }) {
           <div className="glass-panel p-4 rounded border border-cyber-border relative group hover:border-cyber-rose/40 hover:shadow-[0_0_15px_rgba(239,68,68,0.03)] transition-all duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-rose opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
-            <div className="flex items-center justify-between mb-2 border-b border-cyber-border/10 pb-1.5">
-              <span className="text-[9px] font-mono text-cyber-rose tracking-wider flex items-center gap-1.5 uppercase">
+            <div className="flex items-center justify-between mb-2.5 border-b border-cyber-border/10 pb-1.5">
+              <span className="text-[11px] font-mono text-cyber-rose tracking-wider flex items-center gap-1.5 uppercase">
                 <Code className="w-3.5 h-3.5" /> MODULE 03 // NET_TEL
               </span>
-              <span className="text-[8px] bg-cyber-rose/10 text-cyber-rose px-1.5 rounded font-mono font-bold">READY</span>
+              <span className="text-[9px] bg-cyber-rose/10 text-cyber-rose px-2 py-0.5 rounded font-mono font-bold">READY</span>
             </div>
  
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
+            <h3 className="font-orbitron text-sm font-bold tracking-wider text-white mb-2 uppercase">
               Websocket Telemetry
             </h3>
-            <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
+            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
               Streams coordinate frames and receives predictions via persistent, bidirectional WebSocket channels.
             </p>
  
