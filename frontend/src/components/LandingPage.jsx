@@ -67,21 +67,20 @@ export default function LandingPage({ onEnterDashboard }) {
         {/* Title */}
         <motion.h1 
           variants={itemVariants}
-          className="text-4xl md:text-6xl font-black font-orbitron tracking-widest mb-6 relative select-none text-white leading-tight uppercase"
+          className="text-6xl md:text-8xl font-black font-orbitron tracking-widest mb-6 relative select-none text-white leading-none uppercase"
         >
-          SPATIAL GESTURE<br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-teal to-cyber-green drop-shadow-[0_0_15px_rgba(0,240,255,0.25)]">
-            INTELLIGENCE ENGINE
+          GESTURE
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-teal to-cyber-green drop-shadow-[0_0_15px_rgba(0,240,255,0.25)] font-black">
+            X
           </span>
         </motion.h1>
  
         {/* Description */}
         <motion.p 
           variants={itemVariants}
-          className="text-cyber-text/70 text-xs md:text-sm max-w-2xl font-sans mb-10 leading-relaxed px-4"
+          className="text-cyber-text/75 text-sm md:text-base max-w-xl font-sans mb-10 leading-relaxed px-4"
         >
-          Real-time 21-point MediaPipe skeletal landmark tracking mesh, client-edge coordinates
-          extraction, and low-latency WebSocket machine learning prediction pipeline.
+          Real-time 21-point skeletal tracking and low-latency gesture intelligence.
         </motion.p>
  
         {/* CTA Launch Button */}

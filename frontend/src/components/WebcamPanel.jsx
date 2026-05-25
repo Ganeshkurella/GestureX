@@ -40,6 +40,12 @@ export default function WebcamPanel({
   const [hudLogs, setHudLogs] = useState([]);
   const [isCameraEnabled, setIsCameraEnabled] = useState(true);
 
+  // Terminal logging
+  const addHudLog = useCallback((msg) => {
+    const timestamp = new Date().toLocaleTimeString([], { hour12: false });
+    setHudLogs(prev => [`[${timestamp}] ${msg}`, ...prev].slice(0, 15));
+  }, []);
+
   // Toggle camera active state and clean up parent logs
   const toggleCamera = useCallback(() => {
     setIsCameraEnabled((prev) => {
@@ -70,12 +76,6 @@ export default function WebcamPanel({
   // Local MediaPipe Hand Landmarker
   const { isLoading: isModelLoading, error: modelError, detectHands } = useMediaPipe();
   const [fps, updateFPS] = useFPS();
-
-  // Terminal logging
-  const addHudLog = useCallback((msg) => {
-    const timestamp = new Date().toLocaleTimeString([], { hour12: false });
-    setHudLogs(prev => [`[${timestamp}] ${msg}`, ...prev].slice(0, 15));
-  }, []);
 
   // Sync WS status back to parent
   useEffect(() => {
