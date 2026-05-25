@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+// Base URL can be configured via Vite env variables, fallback to local host
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 // Create configured Axios instance
 const apiClient = axios.create({

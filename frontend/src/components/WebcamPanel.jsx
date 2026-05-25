@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
-import { CameraOff, Scan, AlertCircle } from 'lucide-react';
+import { CameraOff, Scan, AlertCircle, Maximize2, Minimize2, Terminal, ShieldAlert, Radio, Activity } from 'lucide-react';
 import { useMediaPipe } from '../hooks/useMediaPipe';
 import { useFPS } from '../hooks/useFPS';
-import { TrackingWebSocketService } from '../services/websocket';
+import { useWebsocket } from '../hooks/useWebsocket';
 import { predictGesture } from '../services/api';
 
 // Landmark joints connection maps
@@ -23,39 +23,81 @@ export default function WebcamPanel({
   onFPSChange,
   onWSStatusChange,
   isModelLoadingCallback,
-  onPredictionResult
+  onPredictionResult,
+  activePrediction = 'None',
+  predictionConfidence = 0.0
 }) {
+  const containerRef = useRef(null);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
-  const wsServiceRef = useRef(null);
   const lastProcessTimeRef = useRef(0);
   const lastPredictTimeRef = useRef(0);
-  const sentTimesRef = useRef([]);
 
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
-  const [wsStatus, setWsStatus] = useState('disconnected');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hudLogs, setHudLogs] = useState([]);
   
-  // Initialize local MediaPipe
+  // Reusable custom WebSocket Hook
+  const { status: wsStatus, latency: wsLatency, connect, disconnect, sendFrame } = useWebsocket();
+  
+  // Local MediaPipe Hand Landmarker
   const { isLoading: isModelLoading, error: modelError, detectHands } = useMediaPipe();
   const [fps, updateFPS] = useFPS();
 
-  // Notify parent of loading state changes
+  // Terminal logging
+  const addHudLog = useCallback((msg) => {
+    const timestamp = new Date().toLocaleTimeString([], { hour12: false });
+    setHudLogs(prev => [`[${timestamp}] ${msg}`, ...prev].slice(0, 15));
+  }, []);
+
+  // Sync WS status back to parent
+  useEffect(() => {
+    if (onWSStatusChange) {
+      onWSStatusChange(wsStatus);
+    }
+  }, [wsStatus, onWSStatusChange]);
+
+  // Sync loading state to parent
   useEffect(() => {
     if (isModelLoadingCallback) {
       isModelLoadingCallback(isModelLoading);
     }
   }, [isModelLoading, isModelLoadingCallback]);
 
-  // Notify parent of FPS changes
+  // Sync FPS to parent
   useEffect(() => {
     if (onFPSChange) {
       onFPSChange(fps);
     }
   }, [fps, onFPSChange]);
 
-  // Draw overlay canvas
+  // Handle browser fullscreen transitions
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      addHudLog(document.fullscreenElement ? "FULLSCREEN HUD MODE ENABLED" : "RESTORED HUD DEFAULT PANEL");
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [addHudLog]);
+
+  const toggleFullscreen = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch((err) => {
+        console.error("Error activating fullscreen:", err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
+
+  // Draw overlay canvas including bounding boxes & radar sweeps
   const drawOverlay = useCallback((handsData) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -66,10 +108,90 @@ export default function WebcamPanel({
 
     handsData.forEach((hand) => {
       const isRightHand = hand.label === 'Right';
-      // Cyan for left hand, Green for right hand
       const themeColor = isRightHand ? '#00ff88' : '#66fcf1';
       
-      // 1. Draw connections
+      // 1. Calculate & Draw Bounding Box with Cyberpunk corners
+      const xs = hand.landmarks.map(lm => lm.x * canvas.width);
+      const ys = hand.landmarks.map(lm => lm.y * canvas.height);
+      const minX = Math.min(...xs) - 20;
+      const maxX = Math.max(...xs) + 20;
+      const minY = Math.min(...ys) - 20;
+      const maxY = Math.max(...ys) + 20;
+      
+      const boxWidth = maxX - minX;
+      const boxHeight = maxY - minY;
+      
+      ctx.strokeStyle = themeColor;
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = themeColor;
+      
+      const cornerLength = Math.min(18, boxWidth * 0.25);
+      
+      // Top-Left
+      ctx.beginPath();
+      ctx.moveTo(minX + cornerLength, minY);
+      ctx.lineTo(minX, minY);
+      ctx.lineTo(minX, minY + cornerLength);
+      ctx.stroke();
+      
+      // Top-Right
+      ctx.beginPath();
+      ctx.moveTo(maxX - cornerLength, minY);
+      ctx.lineTo(maxX, minY);
+      ctx.lineTo(maxX, minY + cornerLength);
+      ctx.stroke();
+      
+      // Bottom-Left
+      ctx.beginPath();
+      ctx.moveTo(minX + cornerLength, maxY);
+      ctx.lineTo(minX, maxY);
+      ctx.lineTo(minX, maxY - cornerLength);
+      ctx.stroke();
+      
+      // Bottom-Right
+      ctx.beginPath();
+      ctx.moveTo(maxX - cornerLength, maxY);
+      ctx.lineTo(maxX, maxY);
+      ctx.lineTo(maxX, maxY - cornerLength);
+      ctx.stroke();
+
+      // Translucent panel fill
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = isRightHand ? 'rgba(0, 255, 136, 0.03)' : 'rgba(102, 252, 241, 0.03)';
+      ctx.fillRect(minX, minY, boxWidth, boxHeight);
+
+      // Label Bounding Box
+      ctx.fillStyle = themeColor;
+      ctx.font = 'bold 9px Orbitron, sans-serif';
+      ctx.fillText(`TARGET LOCKED: ${hand.label.toUpperCase()}`, minX, minY - 8);
+
+      // 2. Draw Palm Radar Sweep centered at middle finger MCP (Landmark 9)
+      const palmMCP = hand.landmarks[9];
+      if (palmMCP) {
+        const cx = palmMCP.x * canvas.width;
+        const cy = palmMCP.y * canvas.height;
+        const radius = 30;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = `${themeColor}22`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        const sweepAngle = (performance.now() / 250) % (2 * Math.PI);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + radius * Math.cos(sweepAngle), cy + radius * Math.sin(sweepAngle));
+        ctx.strokeStyle = themeColor;
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = themeColor;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+      
+      // 3. Draw connections
       if (showConnections) {
         ctx.beginPath();
         ctx.lineWidth = 3;
@@ -86,53 +208,46 @@ export default function WebcamPanel({
           }
         });
         ctx.stroke();
-        ctx.shadowBlur = 0; // Reset shadow
+        ctx.shadowBlur = 0;
       }
 
-      // 2. Draw landmark points
+      // 4. Draw landmark points
       hand.landmarks.forEach((lm, idx) => {
         ctx.beginPath();
-        ctx.arc(lm.x * canvas.width, lm.y * canvas.height, idx === 0 ? 6 : 4, 0, 2 * Math.PI);
-        ctx.fillStyle = idx === 0 ? '#ffffff' : '#ffffff';
-        ctx.shadowBlur = 8;
+        ctx.arc(lm.x * canvas.width, lm.y * canvas.height, idx === 0 ? 6 : 3.5, 0, 2 * Math.PI);
+        ctx.fillStyle = idx === 0 ? '#ffffff' : themeColor;
+        ctx.shadowBlur = 6;
         ctx.shadowColor = themeColor;
         ctx.fill();
 
-        // Tip rings
+        // Rings on tips
         if ([4, 8, 12, 16, 20].includes(idx)) {
           ctx.beginPath();
-          ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 8, 0, 2 * Math.PI);
-          ctx.strokeStyle = themeColor;
-          ctx.lineWidth = 1.5;
+          ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 7, 0, 2 * Math.PI);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
           ctx.stroke();
         }
       });
       ctx.shadowBlur = 0;
 
-      // 3. Draw text label
+      // 5. Draw labels text
       if (showLabels && hand.landmarks[9]) {
-        const mcPoint = hand.landmarks[9];
+        const mc = hand.landmarks[9];
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px Orbitron, sans-serif';
+        ctx.font = '9px Orbitron, sans-serif';
         ctx.fillText(
-          `${hand.label.toUpperCase()}`,
-          mcPoint.x * canvas.width - 20,
-          mcPoint.y * canvas.height - 15
+          `${hand.label.toUpperCase()} HAND [CONF: ${(hand.confidence || 1.0).toFixed(2)}]`,
+          mc.x * canvas.width - 45,
+          mc.y * canvas.height - 18
         );
       }
     });
   }, [showConnections, showLabels]);
 
-  // Handle server-side results (FastAPI WS)
-  const handleServerMessage = useCallback((data) => {
+  // Handle server WebSocket frame results
+  const handleServerMessage = useCallback((data, socketLatency) => {
     updateFPS();
-    
-    let latency = 0;
-    if (sentTimesRef.current.length > 0) {
-      const sendTime = sentTimesRef.current.shift();
-      latency = Math.round(performance.now() - sendTime);
-    }
-
     if (data.success) {
       const formattedHands = data.hands.map((h) => ({
         label: h.label,
@@ -142,48 +257,38 @@ export default function WebcamPanel({
       onHandResults(formattedHands);
       drawOverlay(formattedHands);
       
-      // Update predictions in the dashboard from socket payload
       if (onPredictionResult) {
-        onPredictionResult(data.gesture || 'None', data.confidence || 0.0, latency);
+        onPredictionResult(data.gesture || 'None', data.confidence || 0.0, socketLatency);
+      }
+
+      if (data.gesture && data.gesture !== 'None') {
+        addHudLog(`SOCKET FEEDBACK: '${data.gesture}' (CONF: ${(data.confidence * 100).toFixed(0)}%) in ${socketLatency}ms`);
       }
     } else {
       onHandResults([]);
       drawOverlay([]);
       if (onPredictionResult) {
-        onPredictionResult('None', 0.0, latency);
+        onPredictionResult('None', 0.0, socketLatency);
       }
     }
-  }, [onHandResults, drawOverlay, updateFPS, onPredictionResult]);
+  }, [onHandResults, drawOverlay, updateFPS, onPredictionResult, addHudLog]);
 
-  const handleWSStatusChange = useCallback((status) => {
-    setWsStatus(status);
-    if (onWSStatusChange) {
-      onWSStatusChange(status);
-    }
-  }, [onWSStatusChange]);
-
-  // Establish or tear down WebSockets based on mode
+  // Manage WebSockets connections depending on mode
   useEffect(() => {
     if (processingMode === 'server') {
-      wsServiceRef.current = new TrackingWebSocketService();
-      wsServiceRef.current.connect(handleServerMessage, handleWSStatusChange);
+      addHudLog("INITIALIZING FASTAPI WEBSOCKET SYSTEM...");
+      connect(handleServerMessage);
     } else {
-      if (wsServiceRef.current) {
-        wsServiceRef.current.disconnect();
-        wsServiceRef.current = null;
-      }
-      handleWSStatusChange('disconnected');
+      disconnect();
+      addHudLog("CONNECTED LOCAL WASM/GPU CLIENT PIPELINE");
     }
 
     return () => {
-      if (wsServiceRef.current) {
-        wsServiceRef.current.disconnect();
-        wsServiceRef.current = null;
-      }
+      disconnect();
     };
-  }, [processingMode, handleServerMessage, handleWSStatusChange]);
+  }, [processingMode, connect, disconnect, handleServerMessage, addHudLog]);
 
-  // Main tracking loop
+  // Main Webcam frame capturing loop
   useEffect(() => {
     const processLoop = async () => {
       const webcam = webcamRef.current;
@@ -194,14 +299,12 @@ export default function WebcamPanel({
         return;
       }
 
-      // Sync canvas dimensions with video elements
       if (canvas.width !== webcam.video.videoWidth) {
         canvas.width = webcam.video.videoWidth;
         canvas.height = webcam.video.videoHeight;
       }
 
       if (processingMode === 'client') {
-        // Client-side local tracking (runs client-side at max speed)
         const results = detectHands(webcam.video);
         updateFPS();
 
@@ -214,16 +317,19 @@ export default function WebcamPanel({
           onHandResults(formattedHands);
           drawOverlay(formattedHands);
 
-          // Throttled client-side REST predict calls
           const now = performance.now();
           if (now - lastPredictTimeRef.current > 200) { // 5 Hz
             lastPredictTimeRef.current = now;
             const startTime = performance.now();
+            
             predictGesture(formattedHands[0].landmarks)
               .then((pred) => {
                 const latency = Math.round(performance.now() - startTime);
                 if (onPredictionResult) {
                   onPredictionResult(pred.gesture, pred.confidence, latency);
+                }
+                if (pred.gesture && pred.gesture !== 'None') {
+                  addHudLog(`REST INFERENCE: '${pred.gesture}' (CONF: ${(pred.confidence * 100).toFixed(0)}%) in ${latency}ms`);
                 }
               })
               .catch((err) => {
@@ -233,34 +339,30 @@ export default function WebcamPanel({
         } else {
           onHandResults([]);
           drawOverlay([]);
-          if (onPredictionResult) {
-            onPredictionResult('None', 0.0, 0);
+          const now = performance.now();
+          if (now - lastPredictTimeRef.current > 200) {
+            lastPredictTimeRef.current = now;
+            if (onPredictionResult) {
+              onPredictionResult('None', 0.0, 0);
+            }
           }
         }
       } else if (processingMode === 'server' && wsStatus === 'connected') {
-        // Server-side WebSocket streaming (limit to ~20fps to save bandwidth)
         const now = performance.now();
-        if (now - lastProcessTimeRef.current > 50) { // Throttled to ~20 FPS
+        if (now - lastProcessTimeRef.current > 50) { // 20 FPS throttle
           lastProcessTimeRef.current = now;
 
-          // Render webcam video to offscreen canvas blob
           const offscreenCanvas = document.createElement('canvas');
-          offscreenCanvas.width = 480; // Compressed frame dimensions
+          offscreenCanvas.width = 480;
           offscreenCanvas.height = 360;
           const offscreenCtx = offscreenCanvas.getContext('2d');
-          
-          // Mirror correction if required, otherwise simple draw
           offscreenCtx.drawImage(webcam.video, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
           
           offscreenCanvas.toBlob((blob) => {
-            if (blob && wsServiceRef.current) {
-              sentTimesRef.current.push(performance.now());
-              if (sentTimesRef.current.length > 100) {
-                sentTimesRef.current.shift();
-              }
-              wsServiceRef.current.sendFrame(blob);
+            if (blob) {
+              sendFrame(blob);
             }
-          }, 'image/jpeg', 0.55); // 55% quality compression
+          }, 'image/jpeg', 0.55);
         }
       }
 
@@ -273,23 +375,117 @@ export default function WebcamPanel({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [processingMode, detectHands, updateFPS, onHandResults, drawOverlay, wsStatus, onPredictionResult]);
+  }, [processingMode, detectHands, updateFPS, onHandResults, drawOverlay, wsStatus, sendFrame, onPredictionResult, addHudLog]);
 
   const handleCameraUserMedia = () => {
     setCameraActive(true);
     setCameraError(null);
+    addHudLog("WEBCAM OPTICAL FEED ACTIVE (640x480)");
   };
 
   const handleCameraError = (err) => {
     console.error("Webcam media access error:", err);
     setCameraActive(false);
     setCameraError("Camera access denied or device not found.");
+    addHudLog("CRITICAL: SENSOR SIGHT CONFLICT - ACCESS DENIED");
   };
 
   return (
-    <div className="glass-panel rounded-xl border border-cyber-border/40 overflow-hidden relative aspect-video bg-black/60 shadow-glass">
-      
-      {/* 1. Video Element & Overlay Canvas */}
+    <div 
+      ref={containerRef}
+      className={`glass-panel border overflow-hidden relative shadow-glass transition-all duration-300 ${
+        isFullscreen 
+          ? 'fixed inset-0 z-50 bg-black' 
+          : 'rounded-xl border-cyber-border/40 aspect-video bg-black/60'
+      }`}
+    >
+      {/* Dynamic scan line bar (Only when camera active) */}
+      {cameraActive && (
+        <div className="absolute top-0 left-0 w-full h-[2px] scanning-bar absolute top-0 left-0 animate-scan z-10 pointer-events-none"></div>
+      )}
+
+      {/* Fullscreen HUD Overlays */}
+      {isFullscreen && (
+        <>
+          {/* Cyber grid lines */}
+          <div className="absolute inset-0 pointer-events-none z-10 opacity-15 cyber-grid"></div>
+
+          {/* Left Panel HUD: Floating Coordinates Log */}
+          <div className="absolute top-4 left-4 z-20 w-64 glass-panel border border-cyber-cyan/35 bg-black/75 p-3 rounded font-mono text-[9px] text-cyber-cyan/95 max-h-[85vh] overflow-hidden flex flex-col gap-2 shadow-[0_0_15px_rgba(102,252,241,0.2)]">
+            <div className="flex items-center gap-1.5 border-b border-cyber-cyan/35 pb-1 mb-1 font-orbitron font-bold text-[10px]">
+              <Terminal className="w-3.5 h-3.5" /> HUD OPTICAL LOGGER
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin select-none pr-1">
+              {hudLogs.length === 0 ? (
+                <div className="text-cyber-text/30 animate-pulse">[WAITING FOR Telemetry LOGS...]</div>
+              ) : (
+                hudLogs.map((log, idx) => (
+                  <div key={idx} className="whitespace-pre-wrap">{log}</div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel HUD: Active Prediction & Statistics */}
+          <div className="absolute top-4 right-4 z-20 w-72 glass-panel border border-cyber-rose/35 bg-black/75 p-4 rounded font-mono text-[10px] text-cyber-text/95 flex flex-col gap-4 shadow-[0_0_15px_rgba(255,0,127,0.2)]">
+            <div className="flex items-center justify-between border-b border-cyber-rose/35 pb-1.5 font-orbitron font-bold text-[11px] text-cyber-rose">
+              <span className="flex items-center gap-1.5"><Radio className="w-3.5 h-3.5 animate-pulse" /> LIVE HUD PREDICTIONS</span>
+              <span className="text-[9px] px-1 py-0.2 rounded bg-cyber-rose/10 border border-cyber-rose/35 font-mono">
+                {processingMode.toUpperCase()}
+              </span>
+            </div>
+
+            {/* Neon Card prediction display */}
+            <div className="bg-cyber-bg/60 p-3 rounded border border-cyber-border/10 text-center min-h-[90px] flex flex-col justify-center gap-1 relative overflow-hidden">
+              <div className="absolute top-1 left-1.5 text-[8px] text-cyber-text/40 tracking-wider">RECOGNIZED GESTURE</div>
+              <h2 className="text-2xl font-black font-orbitron text-white tracking-widest mt-1 uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-cyber-blue">
+                {activePrediction}
+              </h2>
+              <div className="text-xs text-cyber-cyan font-bold font-orbitron mt-0.5">
+                CONFIDENCE: {(predictionConfidence * 100).toFixed(0)}%
+              </div>
+            </div>
+
+            {/* Performance profiles */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between border-b border-cyber-border/5 pb-1">
+                <span className="text-cyber-text/50">SENSOR FRAME RESOLUTION</span>
+                <span className="text-white font-bold">640 x 480 px</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-cyber-border/5 pb-1">
+                <span className="text-cyber-text/50">SYSTEM FREQUENCY (FPS)</span>
+                <span className="text-cyber-cyan font-bold flex items-center gap-1">
+                  <Activity className="w-3 h-3 text-cyber-cyan" /> {fps} Hz
+                </span>
+              </div>
+              <div className="flex items-center justify-between border-b border-cyber-border/5 pb-1">
+                <span className="text-cyber-text/50">PIPELINE NETWORK LATENCY</span>
+                <span className="text-cyber-green font-bold">
+                  {processingMode === 'server' ? `${wsLatency} ms (WS)` : '10-25 ms (REST)'}
+                </span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={toggleFullscreen}
+              className="w-full py-1.5 bg-cyber-rose/15 hover:bg-cyber-rose text-cyber-rose hover:text-white rounded border border-cyber-rose/40 font-orbitron text-[10px] tracking-wider transition-all"
+            >
+              EXIT FULLSCREEN HUD
+            </button>
+          </div>
+
+          {/* Centered Crosshairs overlay */}
+          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <div className="w-16 h-16 border border-cyber-cyan/20 rounded-full relative flex items-center justify-center">
+              <div className="w-2 h-2 bg-cyber-cyan/35 rounded-full"></div>
+              <div className="w-6 h-[1px] bg-cyber-cyan/20 absolute"></div>
+              <div className="w-[1px] h-6 bg-cyber-cyan/20 absolute"></div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Webcam Frame Element */}
       <div className="relative w-full h-full flex items-center justify-center">
         <Webcam
           ref={webcamRef}
@@ -302,7 +498,7 @@ export default function WebcamPanel({
             height: 480,
             facingMode: "user"
           }}
-          className="absolute w-full h-full object-cover scale-x-[-1]" // mirrored
+          className="absolute w-full h-full object-cover scale-x-[-1]"
         />
 
         <canvas
@@ -310,58 +506,61 @@ export default function WebcamPanel({
           className="absolute w-full h-full object-cover scale-x-[-1] z-10 pointer-events-none"
         />
 
-        {/* Cyber Scanning Overlay animation */}
-        {cameraActive && (
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-            <div className="w-full h-[2px] scanning-bar absolute top-0 left-0 animate-scan"></div>
-            {/* Corner Crosshairs */}
-            <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-cyber-cyan/60"></div>
-            <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-cyber-cyan/60"></div>
-            <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-cyber-cyan/60"></div>
-            <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-cyber-cyan/60"></div>
+        {/* HUD control bar (Visible unless fullscreen is handled) */}
+        {!isFullscreen && cameraActive && (
+          <div className="absolute top-3 right-3 z-20 flex gap-2">
+            <button
+              onClick={toggleFullscreen}
+              className="p-1.5 rounded bg-black/60 border border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all shadow-[0_0_10px_rgba(102,252,241,0.15)]"
+              title="Fullscreen HUD Mode"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
       </div>
 
-      {/* 2. Loading State */}
+      {/* Loaders/Offline/Error Displays */}
       {isModelLoading && processingMode === 'client' && (
         <div className="absolute inset-0 bg-cyber-bg/95 flex flex-col items-center justify-center z-20 gap-3">
-          <Scan className="w-10 h-10 text-cyber-cyan animate-spin" />
+          <Scan className="w-12 h-12 text-cyber-cyan animate-spin" />
           <p className="font-orbitron text-sm font-bold text-cyber-cyan tracking-widest animate-pulse">
-            LOADING MEDIAPIPE MODEL...
+            LOADING MEDIAPIPE CORE...
           </p>
-          <p className="text-[10px] text-cyber-text/50 font-mono">
-            Initial setup downloads ~15MB structure. Please wait.
-          </p>
+          <div className="w-48 h-1 bg-black/60 rounded-full overflow-hidden border border-cyber-border/20">
+            <div className="h-full bg-cyber-cyan animate-[shimmer_1.5s_infinite] w-2/3 rounded-full"></div>
+          </div>
         </div>
       )}
 
-      {/* 3. Server Connecting State */}
       {processingMode === 'server' && wsStatus !== 'connected' && (
-        <div className="absolute inset-0 bg-cyber-bg/90 flex flex-col items-center justify-center z-20 gap-3">
-          <div className={`w-8 h-8 rounded-full border-2 border-t-transparent border-cyber-rose ${wsStatus === 'disconnected' ? 'animate-spin' : ''}`}></div>
-          <p className="font-orbitron text-sm font-bold text-cyber-rose tracking-wider">
-            {wsStatus === 'error' ? 'BACKEND OFFLINE' : 'ESTABLISHING WEBSOCKET CONNECTION...'}
+        <div className="absolute inset-0 bg-cyber-bg/90 flex flex-col items-center justify-center z-20 gap-3 p-4 text-center">
+          {wsStatus === 'error' ? (
+            <ShieldAlert className="w-12 h-12 text-cyber-rose animate-bounce" />
+          ) : (
+            <div className="w-8 h-8 rounded-full border-2 border-t-transparent border-cyber-rose animate-spin"></div>
+          )}
+          <p className="font-orbitron text-sm font-bold text-cyber-rose tracking-wider uppercase">
+            {wsStatus === 'error' ? 'BACKEND OFFLINE' : 'ESTABLISHING WEBSOCKET PIPELINE...'}
           </p>
-          <p className="text-[10px] text-cyber-text/50 font-mono text-center max-w-[280px]">
+          <p className="text-[10px] text-cyber-text/50 font-mono max-w-[280px]">
             {wsStatus === 'error' 
-              ? 'Failed to connect to ws://127.0.0.1:8000. Verify the FastAPI server is running.' 
-              : 'Streaming frame pipeline setup.'}
+              ? 'Verification failure at ws://127.0.0.1:8000. Launch backend server to restore services.' 
+              : 'Piping frame buffers to endpoint.'}
           </p>
         </div>
       )}
 
-      {/* 4. Error Display */}
       {(!cameraActive || cameraError || modelError) && (
         <div className="absolute inset-0 bg-cyber-bg/90 flex flex-col items-center justify-center z-20 p-4 gap-2 text-center">
           <CameraOff className="w-12 h-12 text-cyber-rose animate-bounce" />
           <p className="font-orbitron text-sm font-bold text-cyber-rose uppercase">
-            {modelError ? "MediaPipe Engine Error" : "Sensor Error Detected"}
+            {modelError ? "Engine Assembly Error" : "Optical Sensor Disconnected"}
           </p>
           <p className="text-xs text-cyber-text/60 font-mono max-w-[400px]">
             {cameraError || 
-             (modelError && `Failed to load MediaPipe: ${modelError.message || modelError.toString()}`) || 
-             "Awaiting webcam stream permissions."}
+              (modelError && `Failed to load MediaPipe: ${modelError.message || modelError.toString()}`) || 
+              "Awaiting camera optical credentials."}
           </p>
         </div>
       )}

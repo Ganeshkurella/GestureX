@@ -1,8 +1,16 @@
 import os
 import joblib
 import numpy as np
+import logging
 from typing import List, Dict, Tuple, Optional
 from app.utils.preprocessor import normalize_hand_landmarks
+
+# Setup structured logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("predictor_service")
 
 # Paths to serialized joblib assets relative to this module
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -28,11 +36,11 @@ class GesturePredictorService:
                 f"Please run 'python train.py' first to train and save the model."
             )
 
-        print(f"Loading gesture recognition model from: {MODEL_PATH}")
+        logger.info(f"Loading gesture recognition model from: {MODEL_PATH}")
         self.model = joblib.load(MODEL_PATH)
         self.label_encoder = joblib.load(ENCODER_PATH)
         self.is_loaded = True
-        print("Gesture predictor service successfully initialized.")
+        logger.info("Gesture predictor service successfully initialized.")
 
     def predict(self, raw_landmarks: List[Dict[str, float]]) -> Tuple[str, float]:
         """

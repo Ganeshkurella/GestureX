@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Settings, Eye, HelpCircle, Code, Server, Play, StopCircle, RefreshCw, Cpu, Layers, Database, Disc, Circle, Zap } from 'lucide-react';
+import { Settings, Eye, HelpCircle, Code, Server, Play, RefreshCw, Cpu, Layers, Database, Disc, Zap, Maximize2, Terminal, BarChart2 } from 'lucide-react';
 import WebcamPanel from './WebcamPanel';
 import StatusIndicator from './StatusIndicator';
 import CoordinateViewer from './CoordinateViewer';
@@ -7,12 +7,54 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getDatasetCounts, saveDatasetSample } from '../services/api';
 
 const GESTURE_THEMES = {
-  'Thumbs Up': { color: 'text-cyber-green', bar: 'bg-cyber-green shadow-[0_0_12px_rgba(0,255,136,0.5)]', glow: 'shadow-[0_0_20px_rgba(0,255,136,0.25)]', border: 'border-cyber-green/45' },
-  'Peace': { color: 'text-purple-400', bar: 'bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.5)]', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]', border: 'border-purple-500/40' },
-  'Stop Palm': { color: 'text-cyber-rose', bar: 'bg-cyber-rose shadow-[0_0_12px_rgba(255,0,127,0.5)]', glow: 'shadow-[0_0_20px_rgba(255,0,127,0.25)]', border: 'border-cyber-rose/40' },
-  'Fist': { color: 'text-cyber-amber', bar: 'bg-cyber-amber shadow-[0_0_12px_rgba(255,170,0,0.5)]', glow: 'shadow-[0_0_20px_rgba(255,170,0,0.25)]', border: 'border-cyber-amber/40' },
-  'OK Sign': { color: 'text-cyber-cyan', bar: 'bg-cyber-cyan shadow-[0_0_12px_rgba(102,252,241,0.5)]', glow: 'shadow-[0_0_20px_rgba(102,252,241,0.25)]', border: 'border-cyber-cyan/40' },
-  'None': { color: 'text-cyber-text/30', bar: 'bg-cyber-text/20', glow: '', border: 'border-cyber-border/10' }
+  'Thumbs Up': { 
+    color: 'text-cyber-green', 
+    bar: 'bg-cyber-green shadow-[0_0_12px_rgba(0,255,136,0.5)]', 
+    glow: 'shadow-[0_0_20px_rgba(0,255,136,0.25)]', 
+    border: 'border-cyber-green/45',
+    svgGlow: 'rgba(0, 255, 136, 0.4)',
+    stroke: '#00ff88'
+  },
+  'Peace': { 
+    color: 'text-purple-400', 
+    bar: 'bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.5)]', 
+    glow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]', 
+    border: 'border-purple-500/40',
+    svgGlow: 'rgba(168, 85, 247, 0.4)',
+    stroke: '#a855f7'
+  },
+  'Stop Palm': { 
+    color: 'text-cyber-rose', 
+    bar: 'bg-cyber-rose shadow-[0_0_12px_rgba(255,0,127,0.5)]', 
+    glow: 'shadow-[0_0_20px_rgba(255,0,127,0.25)]', 
+    border: 'border-cyber-rose/40',
+    svgGlow: 'rgba(255, 0, 127, 0.4)',
+    stroke: '#ff007f'
+  },
+  'Fist': { 
+    color: 'text-cyber-amber', 
+    bar: 'bg-cyber-amber shadow-[0_0_12px_rgba(255,170,0,0.5)]', 
+    glow: 'shadow-[0_0_20px_rgba(255,170,0,0.25)]', 
+    border: 'border-cyber-amber/40',
+    svgGlow: 'rgba(255, 170, 0, 0.4)',
+    stroke: '#ffaa00'
+  },
+  'OK Sign': { 
+    color: 'text-cyber-cyan', 
+    bar: 'bg-cyber-cyan shadow-[0_0_12px_rgba(102,252,241,0.5)]', 
+    glow: 'shadow-[0_0_20px_rgba(102,252,241,0.25)]', 
+    border: 'border-cyber-cyan/40',
+    svgGlow: 'rgba(102, 252, 241, 0.4)',
+    stroke: '#66fcf1'
+  },
+  'None': { 
+    color: 'text-cyber-text/30', 
+    bar: 'bg-cyber-text/20', 
+    glow: '', 
+    border: 'border-cyber-border/10',
+    svgGlow: 'rgba(197, 198, 199, 0.1)',
+    stroke: '#c5c6c7'
+  }
 };
 
 export default function Dashboard({ onBackToLanding }) {
@@ -46,6 +88,17 @@ export default function Dashboard({ onBackToLanding }) {
   const [predictionHistory, setPredictionHistory] = useState([]);
   const [inferenceLatency, setInferenceLatency] = useState(0);
 
+  // Sparkline data states
+  const [latencyHistory, setLatencyHistory] = useState(Array(15).fill(0));
+  const [fpsHistory, setFpsHistory] = useState(Array(15).fill(0));
+  const [gestureFrequency, setGestureFrequency] = useState({
+    'Thumbs Up': 0,
+    'Peace': 0,
+    'Stop Palm': 0,
+    'Fist': 0,
+    'OK Sign': 0
+  });
+
   const handleHandResults = useCallback((hands) => {
     setHandsData(hands);
   }, []);
@@ -55,9 +108,17 @@ export default function Dashboard({ onBackToLanding }) {
     setPredictionConfidence(confidence);
     if (latency > 0) {
       setInferenceLatency(latency);
+      setLatencyHistory(prev => [...prev.slice(1), latency]);
     }
     
     if (gesture && gesture !== 'None' && gesture !== 'Searching...') {
+      // Record gesture frequency counts
+      setGestureFrequency(prev => ({
+        ...prev,
+        [gesture]: prev[gesture] + 1
+      }));
+
+      // Record prediction history
       setPredictionHistory((prev) => {
         if (prev.length > 0 && prev[0].gesture === gesture) {
           return prev;
@@ -72,6 +133,13 @@ export default function Dashboard({ onBackToLanding }) {
       });
     }
   }, []);
+
+  // Update FPS history timeline
+  useEffect(() => {
+    if (fps > 0) {
+      setFpsHistory(prev => [...prev.slice(1), fps]);
+    }
+  }, [fps]);
 
   // Fetch initial sample counts
   useEffect(() => {
@@ -162,6 +230,28 @@ export default function Dashboard({ onBackToLanding }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleSaveSample]);
 
+  // SVG Helper to generate sparkline path
+  const getSparklinePath = (history, width = 140, height = 30) => {
+    if (history.length < 2) return '';
+    const min = Math.min(...history);
+    const max = Math.max(...history) || 1;
+    const delta = max - min || 1;
+    
+    return history.map((val, idx) => {
+      const x = (idx / (history.length - 1)) * width;
+      const y = height - 2 - ((val - min) / delta) * (height - 4);
+      return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+    }).join(' ');
+  };
+
+  // Get active theme attributes
+  const activeTheme = GESTURE_THEMES[activePrediction] || GESTURE_THEMES['None'];
+
+  // Circular gauge definitions
+  const radius = 32;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (predictionConfidence * circumference);
+
   return (
     <div className="w-full max-w-6xl mx-auto py-6 px-4">
       {/* Header Panel */}
@@ -169,8 +259,8 @@ export default function Dashboard({ onBackToLanding }) {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold font-orbitron tracking-wide text-white">GESTUREX</span>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/30 font-mono tracking-wider">
-              WORKSPACE ACTIVE
+            <span className="text-[10px] px-2 py-0.5 rounded bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/30 font-mono tracking-wider animate-pulse">
+              TELEMETRY HUB
             </span>
           </div>
           <p className="text-xs text-cyber-text/50 font-mono mt-1">
@@ -179,7 +269,6 @@ export default function Dashboard({ onBackToLanding }) {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Navigation Toggles */}
           <button
             onClick={() => setActiveTab('workspace')}
             className={`px-3 py-1.5 rounded font-orbitron text-xs tracking-wider border transition-all duration-200 ${
@@ -221,7 +310,7 @@ export default function Dashboard({ onBackToLanding }) {
             transition={{ duration: 0.3 }}
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            {/* Left: Webcam Stream Panel (span 2 cols) */}
+            {/* Left: Webcam Stream Panel & Telemetry Indicator (span 2 cols) */}
             <div className="lg:col-span-2 flex flex-col gap-6">
               <WebcamPanel
                 processingMode={processingMode}
@@ -232,101 +321,9 @@ export default function Dashboard({ onBackToLanding }) {
                 onWSStatusChange={setWsStatus}
                 isModelLoadingCallback={setIsModelLoading}
                 onPredictionResult={handlePredictionResult}
+                activePrediction={activePrediction}
+                predictionConfidence={predictionConfidence}
               />
-
-              {/* AI Inference Panel */}
-              <div className="glass-panel p-5 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40">
-                {/* Top ambient highlight line */}
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
-                
-                <div className="flex items-center justify-between border-b border-cyber-border/20 pb-2 mb-4">
-                  <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2">
-                    <Zap className="w-3.5 h-3.5 text-cyber-cyan animate-pulse" /> AI GESTURE RECOGNITION
-                  </h3>
-                  <div className="flex items-center gap-2 font-mono text-[10px] text-cyber-text/50">
-                    <span>LATENCY:</span>
-                    <span className={`font-bold ${inferenceLatency > 0 ? 'text-cyber-green' : 'text-cyber-text/30'}`}>
-                      {inferenceLatency > 0 ? `${inferenceLatency} ms` : '--'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Left Side: Current Prediction */}
-                  <div className="flex flex-col justify-between bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/10 relative overflow-hidden min-h-[140px]">
-                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-ping"></div>
-                    <div>
-                      <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider block">
-                        Active Prediction
-                      </span>
-                      <h2 className={`text-3xl font-black font-orbitron tracking-widest mt-2 ${(GESTURE_THEMES[activePrediction] || GESTURE_THEMES['None']).color} drop-shadow-[0_0_10px_rgba(102,252,241,0.3)]`}>
-                        {activePrediction.toUpperCase()}
-                      </h2>
-                    </div>
-
-                    <div className="mt-4">
-                      <div className="flex justify-between items-center text-[10px] font-mono text-cyber-text/60 mb-1">
-                        <span>CONFIDENCE</span>
-                        <span className="text-cyber-cyan font-bold">{(predictionConfidence * 100).toFixed(1)}%</span>
-                      </div>
-                      <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden border border-cyber-border/5">
-                        <motion.div
-                          className={`h-full rounded-full ${(GESTURE_THEMES[activePrediction] || GESTURE_THEMES['None']).bar}`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${predictionConfidence * 100}%` }}
-                          transition={{ duration: 0.2, ease: "easeOut" }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Side: Prediction History */}
-                  <div className="flex flex-col justify-between bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/10">
-                    <div className="flex items-center justify-between border-b border-cyber-border/10 pb-1 mb-2">
-                      <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider">
-                        Prediction History
-                      </span>
-                      {predictionHistory.length > 0 && (
-                        <button
-                          onClick={() => setPredictionHistory([])}
-                          className="text-[9px] font-mono text-cyber-rose hover:underline"
-                        >
-                          CLEAR
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="flex-1 space-y-1.5 min-h-[100px] flex flex-col justify-center">
-                      {predictionHistory.length === 0 ? (
-                        <p className="text-[10px] font-mono text-cyber-text/30 text-center py-6">
-                          No predictions recorded yet.
-                        </p>
-                      ) : (
-                        <div className="space-y-1 overflow-y-auto max-h-[110px] pr-1 scrollbar-thin">
-                          <AnimatePresence initial={false}>
-                            {predictionHistory.map((item) => (
-                              <motion.div
-                                key={item.id}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 10 }}
-                                transition={{ duration: 0.15 }}
-                                className="flex justify-between items-center bg-black/40 px-2 py-1 rounded border border-cyber-border/5 text-[10px] font-mono"
-                              >
-                                <span className="text-white font-semibold">{item.gesture}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-cyber-cyan">{(item.confidence * 100).toFixed(0)}%</span>
-                                  <span className="text-cyber-text/30 text-[9px]">{item.timestamp}</span>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </AnimatePresence>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Status indicator underneath */}
               <StatusIndicator
@@ -340,11 +337,172 @@ export default function Dashboard({ onBackToLanding }) {
               />
             </div>
 
-            {/* Right: Controls & Coordinate Viewer */}
+            {/* Right: Premium Inference Stats & Controls */}
             <div className="flex flex-col gap-6">
               
-              {/* Settings Panel */}
-              <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 relative overflow-hidden">
+              {/* Premium Prediction Panel */}
+              <div className="glass-panel p-5 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40 shadow-glass flex flex-col gap-4">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
+                
+                <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2 border-b border-cyber-border/10 pb-2">
+                  <Zap className="w-3.5 h-3.5 text-cyber-cyan animate-pulse" /> CLASSIFICATION ANALYTICS
+                </h3>
+
+                {/* Main recognition ring and label card */}
+                <div className="flex items-center gap-4 bg-cyber-bg/30 p-4 rounded-lg border border-cyber-border/15 relative overflow-hidden">
+                  <div className="absolute top-1 right-2 flex items-center gap-1">
+                    <span className="text-[8px] font-mono text-cyber-text/40">LATENCY:</span>
+                    <span className={`text-[8px] font-mono font-bold ${inferenceLatency > 0 ? 'text-cyber-green' : 'text-cyber-text/30'}`}>
+                      {inferenceLatency > 0 ? `${inferenceLatency}ms` : '--'}
+                    </span>
+                  </div>
+
+                  {/* Circular SVG Gauge */}
+                  <div className="relative w-20 h-20 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      {/* Gray track */}
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r={radius}
+                        stroke="rgba(197, 198, 199, 0.08)"
+                        strokeWidth="5"
+                        fill="transparent"
+                      />
+                      {/* Neon indicator circle */}
+                      <motion.circle
+                        cx="40"
+                        cy="40"
+                        r={radius}
+                        stroke={activeTheme.stroke}
+                        strokeWidth="5"
+                        fill="transparent"
+                        strokeDasharray={circumference}
+                        animate={{ strokeDashoffset }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                      />
+                    </svg>
+                    <div className="absolute font-orbitron text-[10px] font-bold text-white text-center">
+                      <div className="text-[12px]">{(predictionConfidence * 100).toFixed(0)}%</div>
+                      <div className="text-[7px] text-cyber-text/40 tracking-wider">CONF</div>
+                    </div>
+                  </div>
+
+                  {/* Classification Text */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    <span className="text-[8px] text-cyber-text/40 font-mono tracking-wider block">ACTIVE STATE</span>
+                    <h2 className={`text-2xl font-black font-orbitron tracking-wider mt-0.5 ${activeTheme.color} drop-shadow-[0_0_12px_rgba(102,252,241,0.2)]`}>
+                      {activePrediction.toUpperCase()}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Telemetry charts row */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Latency Sparkline */}
+                  <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
+                    <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Latency Timeline</div>
+                    <div className="flex items-end justify-between gap-2 mt-1">
+                      <span className="font-orbitron font-bold text-xs text-cyber-green">{inferenceLatency || '--'}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">ms</span></span>
+                      <svg width="60" height="20" className="opacity-80">
+                        <path
+                          d={getSparklinePath(latencyHistory, 60, 20)}
+                          fill="transparent"
+                          stroke="#00ff88"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* FPS Stability Sparkline */}
+                  <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
+                    <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Frame Stability</div>
+                    <div className="flex items-end justify-between gap-2 mt-1">
+                      <span className="font-orbitron font-bold text-xs text-cyber-cyan">{fps}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">Hz</span></span>
+                      <svg width="60" height="20" className="opacity-80">
+                        <path
+                          d={getSparklinePath(fpsHistory, 60, 20)}
+                          fill="transparent"
+                          stroke="#66fcf1"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Horizontal Bar Chart (Gesture frequency distribution) */}
+                <div className="bg-cyber-bg/30 p-3 rounded-lg border border-cyber-border/10 flex flex-col gap-2">
+                  <div className="flex items-center gap-1 text-[8px] font-mono text-cyber-text/40 uppercase pb-1 border-b border-cyber-border/5">
+                    <BarChart2 className="w-3.5 h-3.5 text-cyber-text/40" /> Cumulative Frequency Dist
+                  </div>
+                  <div className="space-y-2 mt-1 select-none">
+                    {['Thumbs Up', 'Peace', 'Stop Palm', 'Fist', 'OK Sign'].map((gesture) => {
+                      const count = gestureFrequency[gesture] || 0;
+                      const maxCount = Math.max(...Object.values(gestureFrequency), 1);
+                      const widthPercent = (count / maxCount) * 100;
+                      const theme = GESTURE_THEMES[gesture];
+                      
+                      return (
+                        <div key={gesture} className="space-y-0.5">
+                          <div className="flex justify-between text-[8px] font-mono text-cyber-text/60">
+                            <span>{gesture}</span>
+                            <span className="text-white">{count}</span>
+                          </div>
+                          <div className="h-1 w-full bg-black/45 rounded-full overflow-hidden">
+                            <motion.div
+                              className={`h-full rounded-full ${theme.bar}`}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${widthPercent}%` }}
+                              transition={{ duration: 0.3 }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Prediction History Logs */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center text-[8px] font-mono text-cyber-text/40 uppercase border-b border-cyber-border/5 pb-1">
+                    <span>Chronological Logs</span>
+                    {predictionHistory.length > 0 && (
+                      <button onClick={() => setPredictionHistory([])} className="text-cyber-rose hover:underline text-[7px]">CLEAR</button>
+                    )}
+                  </div>
+                  <div className="space-y-1 max-h-[110px] overflow-y-auto pr-1 scrollbar-thin">
+                    {predictionHistory.length === 0 ? (
+                      <div className="text-[8px] font-mono text-cyber-text/30 text-center py-4">[EMPTY FEED]</div>
+                    ) : (
+                      <AnimatePresence initial={false}>
+                        {predictionHistory.map((item) => {
+                          const theme = GESTURE_THEMES[item.gesture] || GESTURE_THEMES['None'];
+                          return (
+                            <motion.div
+                              key={item.id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: 10 }}
+                              className="flex justify-between items-center bg-black/40 px-2 py-1 rounded border border-cyber-border/5 text-[9px] font-mono"
+                            >
+                              <span className={`font-semibold ${theme.color}`}>{item.gesture}</span>
+                              <div className="flex items-center gap-2 text-cyber-text/40">
+                                <span>{(item.confidence * 100).toFixed(0)}%</span>
+                                <span className="text-[8px]">{item.timestamp}</span>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </AnimatePresence>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Settings Controls Panel */}
+              <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
                 
                 <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2 mb-3">
@@ -419,8 +577,7 @@ export default function Dashboard({ onBackToLanding }) {
               </div>
 
               {/* Dataset Recorder Panel */}
-              <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 relative overflow-hidden">
-                {/* Top glow accent */}
+              <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 relative overflow-hidden bg-black/40">
                 <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${isRecordingContinuous ? 'via-cyber-rose animate-pulse' : 'via-cyber-amber'} to-transparent`}></div>
 
                 <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
@@ -428,7 +585,6 @@ export default function Dashboard({ onBackToLanding }) {
                     <Database className="w-3.5 h-3.5" /> DATASET RECORDER
                   </h3>
                   
-                  {/* Mode Toggle Checkbox */}
                   <div className="flex items-center gap-1.5 cursor-pointer select-none" onClick={() => setIsRecordMode(!isRecordMode)}>
                     <span className="text-[10px] text-cyber-text/50 font-mono">RECORDER:</span>
                     <span className={`text-[10px] font-bold font-orbitron px-1.5 py-0.5 rounded border transition-colors ${
@@ -473,7 +629,6 @@ export default function Dashboard({ onBackToLanding }) {
 
                     {/* Record Control Action Buttons */}
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-cyber-border/10">
-                      {/* Capture Snapshot */}
                       <button
                         onClick={handleSaveSample}
                         disabled={handsData.length === 0 || isRecordingContinuous}
@@ -486,7 +641,6 @@ export default function Dashboard({ onBackToLanding }) {
                         <Disc className="w-3.5 h-3.5" /> SNAPSHOT [SPACE]
                       </button>
 
-                      {/* Toggle Auto-Recording */}
                       <button
                         onClick={() => setIsRecordingContinuous(!isRecordingContinuous)}
                         disabled={handsData.length === 0}
@@ -507,7 +661,7 @@ export default function Dashboard({ onBackToLanding }) {
                     <div className="h-6 flex items-center justify-center text-[10px] font-mono rounded bg-black/40 border border-cyber-border/5 text-center">
                       {saveStatus === 'SAVING' && (
                         <span className="text-cyber-cyan flex items-center gap-1 animate-pulse justify-center">
-                          <RefreshCw className="w-3 h-3 animate-spin" /> STREAMING COORDINATES TO CSV...
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" /> EXPORTING DATASET DATA TO CSV...
                         </span>
                       )}
                       {saveStatus === 'SUCCESS' && (
