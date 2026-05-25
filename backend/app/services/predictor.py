@@ -13,9 +13,25 @@ logging.basicConfig(
 logger = logging.getLogger("predictor_service")
 
 # Paths to serialized joblib assets relative to this module
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-MODEL_PATH = os.path.join(BASE_DIR, 'data', 'model.joblib')
-ENCODER_PATH = os.path.join(BASE_DIR, 'data', 'label_encoder.joblib')
+def get_asset_path(filename: str) -> str:
+    # Candidate 1: project root / backend / data (standard local execution)
+    path1 = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'backend', 'data', filename))
+    # Candidate 2: project root / data (old local location)
+    path2 = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'data', filename))
+    # Candidate 3: backend root / data (for Vercel deployment where backend is root)
+    path3 = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', filename))
+    # Candidate 4: relative to current working directory
+    path4 = os.path.abspath(os.path.join(os.getcwd(), 'data', filename))
+    path5 = os.path.abspath(os.path.join(os.getcwd(), 'backend', 'data', filename))
+    
+    for p in [path1, path2, path3, path4, path5]:
+        if os.path.exists(p):
+            return p
+    # Fallback to Candidate 1 if none exist
+    return path1
+
+MODEL_PATH = get_asset_path('model.joblib')
+ENCODER_PATH = get_asset_path('label_encoder.joblib')
 
 class GesturePredictorService:
     def __init__(self):

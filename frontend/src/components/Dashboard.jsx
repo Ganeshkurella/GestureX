@@ -129,7 +129,7 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
           gesture,
           confidence,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          id: Date.now()
+          id: `${Date.now()}-${Math.random()}`
         };
         return [newItem, ...prev].slice(0, 5);
       });

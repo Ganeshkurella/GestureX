@@ -15,7 +15,7 @@ GESTURES = {
     '5': 'OK Sign'
 }
 
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 CSV_PATH = os.path.join(DATA_DIR, 'gestures_dataset.csv')
 
 def initialize_csv():

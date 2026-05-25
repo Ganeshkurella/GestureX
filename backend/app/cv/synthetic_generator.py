@@ -3,7 +3,7 @@ import csv
 import numpy as np
 from app.cv.preprocessor import normalize_hand_landmarks
 
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'data'))
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
 CSV_PATH = os.path.join(DATA_DIR, 'gestures_dataset.csv')
 
 def get_base_hand_structure() -> list:
