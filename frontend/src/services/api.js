@@ -3,7 +3,10 @@ import axios from 'axios';
 // Dynamically determine the API base URL based on origin hostname
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-  const hostname = window.location.hostname;
+  let hostname = window.location.hostname;
+  if (hostname === 'localhost') {
+    hostname = '127.0.0.1';
+  }
   
   // Vercel deployment: proxy via the same-origin route /_/backend/api
   if (hostname.endsWith('.vercel.app') || window.location.pathname.startsWith('/_/')) {

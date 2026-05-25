@@ -10,7 +10,10 @@ export function useWebsocket(url) {
   const [latency, setLatency] = useState(0);
 
   const getWSBaseUrl = () => {
-    const hostname = window.location.hostname;
+    let hostname = window.location.hostname;
+    if (hostname === 'localhost') {
+      hostname = '127.0.0.1';
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     if (hostname.endsWith('.vercel.app')) {
       return `${protocol}//${window.location.host}/_/backend/ws/stream`;
