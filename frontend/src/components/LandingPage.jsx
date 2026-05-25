@@ -25,7 +25,7 @@ export default function LandingPage({ onEnterDashboard }) {
 
   return (
     <div 
-      className="min-h-[92vh] flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden select-none"
+      className="h-full flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden select-none"
     >
       
       {/* 1. Ambient Background Glows */}
@@ -50,7 +50,7 @@ export default function LandingPage({ onEnterDashboard }) {
         {/* Top Tech Badge */}
         <motion.div 
           variants={itemVariants}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded bg-cyber-panel border border-cyber-border text-cyber-cyan text-[10px] font-mono tracking-widest uppercase mb-6 shadow-[0_0_15px_rgba(69,162,158,0.1)] relative overflow-hidden group"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded bg-cyber-panel border border-cyber-border text-cyber-cyan text-[10px] font-mono tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(69,162,158,0.1)] relative overflow-hidden group"
         >
           <span className="w-2 h-2 rounded-full bg-cyber-green animate-ping"></span>
           SPATIAL CORE DETECTED // OPERATIONAL
@@ -59,15 +59,15 @@ export default function LandingPage({ onEnterDashboard }) {
         {/* Sub-system Status Code */}
         <motion.span
           variants={itemVariants}
-          className="text-cyber-text/40 font-mono text-[9px] tracking-[0.3em] uppercase mb-2 block"
+          className="text-cyber-text/40 font-mono text-[9px] tracking-[0.3em] uppercase mb-1.5 block"
         >
           [ SYSTEM STATUS: CORE INFERENCE OPTIMIZED ]
         </motion.span>
-
+ 
         {/* Title */}
         <motion.h1 
           variants={itemVariants}
-          className="text-6xl md:text-8xl font-black font-orbitron tracking-widest mb-6 relative select-none text-white leading-none uppercase"
+          className="text-5xl md:text-7xl font-black font-orbitron tracking-widest mb-4 relative select-none text-white leading-none uppercase"
         >
           GESTURE
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-teal to-cyber-green drop-shadow-[0_0_15px_rgba(0,240,255,0.25)] font-black">
@@ -78,17 +78,17 @@ export default function LandingPage({ onEnterDashboard }) {
         {/* Description */}
         <motion.p 
           variants={itemVariants}
-          className="text-cyber-text/75 text-sm md:text-base max-w-xl font-sans mb-10 leading-relaxed px-4"
+          className="text-cyber-text/75 text-sm md:text-base max-w-xl font-sans mb-8 leading-relaxed px-4"
         >
           Real-time 21-point skeletal tracking and low-latency gesture intelligence.
         </motion.p>
  
         {/* CTA Launch Button */}
-        <motion.div variants={itemVariants} className="relative group mb-16">
+        <motion.div variants={itemVariants} className="relative group mb-10">
           <div className="absolute -inset-1 bg-gradient-to-r from-cyber-cyan to-cyber-teal rounded blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
           <button
             onClick={onEnterDashboard}
-            className="relative px-8 py-3.5 bg-cyber-panel hover:bg-cyber-cyan hover:text-black text-cyber-cyan border border-cyber-cyan/40 font-orbitron font-bold text-xs tracking-widest rounded flex items-center gap-3 transition-all duration-300 shadow-[0_0_20px_rgba(0,240,255,0.05)]"
+            className="relative px-8 py-3 bg-cyber-panel hover:bg-cyber-cyan hover:text-black text-cyber-cyan border border-cyber-cyan/40 font-orbitron font-bold text-xs tracking-widest rounded flex items-center gap-3 transition-all duration-300 shadow-[0_0_20px_rgba(0,240,255,0.05)]"
           >
             INITIALIZE TELEMETRY CONSOLE
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -98,76 +98,76 @@ export default function LandingPage({ onEnterDashboard }) {
         {/* Specs Highlights */}
         <motion.div 
           variants={itemVariants}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-left px-4"
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full text-left px-4"
         >
           {/* Card 1 */}
-          <div className="glass-panel p-5 rounded border border-cyber-border relative group hover:border-cyber-cyan/40 hover:shadow-[0_0_15px_rgba(0,240,255,0.03)] transition-all duration-300 overflow-hidden">
+          <div className="glass-panel p-4 rounded border border-cyber-border relative group hover:border-cyber-cyan/40 hover:shadow-[0_0_15px_rgba(0,240,255,0.03)] transition-all duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-cyan opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
-            <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
+            <div className="flex items-center justify-between mb-2 border-b border-cyber-border/10 pb-1.5">
               <span className="text-[9px] font-mono text-cyber-cyan tracking-wider flex items-center gap-1.5 uppercase">
                 <Cpu className="w-3.5 h-3.5" /> MODULE 01 // CV_SKEL
               </span>
               <span className="text-[8px] bg-cyber-cyan/10 text-cyber-cyan px-1.5 rounded font-mono font-bold">ONLINE</span>
             </div>
-
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2 uppercase">
-              21-Point Skeletal Mesh
+ 
+            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
+              Skeletal Hand Tracking
             </h3>
-            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
-              Extracts high-fidelity Cartesian coordinates mapping wrists, joints, and fingertips in absolute depth space.
+            <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
+              Maps 21 hand joints and fingertips in real-time space for high-precision gesture coordinates.
             </p>
             
             {/* Visual simulation bar */}
-            <div className="mt-4 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+            <div className="mt-3 w-full h-1 bg-black/40 rounded overflow-hidden relative">
               <div className="h-full bg-cyber-cyan/30 w-3/4 animate-pulse"></div>
             </div>
           </div>
- 
+  
           {/* Card 2 */}
-          <div className="glass-panel p-5 rounded border border-cyber-border relative group hover:border-cyber-green/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.03)] transition-all duration-300 overflow-hidden">
+          <div className="glass-panel p-4 rounded border border-cyber-border relative group hover:border-cyber-green/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.03)] transition-all duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-green opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
-            <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
+            <div className="flex items-center justify-between mb-2 border-b border-cyber-border/10 pb-1.5">
               <span className="text-[9px] font-mono text-cyber-green tracking-wider flex items-center gap-1.5 uppercase">
                 <Zap className="w-3.5 h-3.5" /> MODULE 02 // ACCEL_IF
               </span>
               <span className="text-[8px] bg-cyber-green/10 text-cyber-green px-1.5 rounded font-mono font-bold">ACTIVE</span>
             </div>
-
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2 uppercase">
-              Lightweight Edge Inference
+ 
+            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
+              In-Browser AI Engine
             </h3>
-            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
-              Processes 63-dimensional coordinate arrays natively on the client using optimized GPU WASM delegates.
+            <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
+              Runs machine learning models directly in your browser using secure client-side computing.
             </p>
-
+ 
             {/* Visual simulation bar */}
-            <div className="mt-4 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+            <div className="mt-3 w-full h-1 bg-black/40 rounded overflow-hidden relative">
               <div className="h-full bg-cyber-green/30 w-5/6 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
             </div>
           </div>
- 
+  
           {/* Card 3 */}
-          <div className="glass-panel p-5 rounded border border-cyber-border relative group hover:border-cyber-rose/40 hover:shadow-[0_0_15px_rgba(239,68,68,0.03)] transition-all duration-300 overflow-hidden">
+          <div className="glass-panel p-4 rounded border border-cyber-border relative group hover:border-cyber-rose/40 hover:shadow-[0_0_15px_rgba(239,68,68,0.03)] transition-all duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-rose opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
-            <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
+            <div className="flex items-center justify-between mb-2 border-b border-cyber-border/10 pb-1.5">
               <span className="text-[9px] font-mono text-cyber-rose tracking-wider flex items-center gap-1.5 uppercase">
                 <Code className="w-3.5 h-3.5" /> MODULE 03 // NET_TEL
               </span>
               <span className="text-[8px] bg-cyber-rose/10 text-cyber-rose px-1.5 rounded font-mono font-bold">READY</span>
             </div>
-
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2 uppercase">
-              Websocket Telemetry
+ 
+            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-1.5 uppercase">
+              Real-Time Data Streaming
             </h3>
-            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
-              Streams coordinate frames and receives predictions via persistent, bidirectional WebSocket channels.
+            <p className="text-[11px] font-sans text-cyber-text/60 leading-relaxed">
+              Syncs tracking telemetry and predicted gesture states instantly with low-latency data streams.
             </p>
-
+ 
             {/* Visual simulation bar */}
-            <div className="mt-4 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+            <div className="mt-3 w-full h-1 bg-black/40 rounded overflow-hidden relative">
               <div className="h-full bg-cyber-rose/30 w-1/2 animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
           </div>

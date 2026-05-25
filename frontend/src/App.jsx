@@ -124,12 +124,15 @@ function Bootloader({ onComplete }) {
 
 function App() {
   const [view, setView] = useState('landing'); // 'landing' | 'booting' | 'dashboard'
+  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
+
+  const shouldScroll = view === 'dashboard' && isAdvancedMode;
 
   return (
-    <div className="min-h-screen text-cyber-text bg-cyber-bg relative flex flex-col justify-between overflow-x-hidden font-sans antialiased selection:bg-cyber-cyan/20 selection:text-cyber-cyan">
+    <div className={`${shouldScroll ? 'min-h-screen' : 'h-screen overflow-hidden'} text-cyber-text bg-cyber-bg relative flex flex-col justify-between overflow-x-hidden font-sans antialiased selection:bg-cyber-cyan/20 selection:text-cyber-cyan`}>
       
       {/* Background utilities */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="w-full h-full hud-moving-grid opacity-[0.06]"></div>
         <div className="w-full h-full hud-scanline opacity-[0.05]"></div>
         
@@ -139,7 +142,7 @@ function App() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col justify-center relative z-10">
+      <main className="flex-1 flex flex-col justify-center relative z-10 overflow-hidden">
         <AnimatePresence mode="wait">
           {view === 'landing' && (
             <motion.div
@@ -148,7 +151,7 @@ function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="flex-1 flex flex-col justify-center"
+              className="flex-1 flex flex-col justify-center overflow-hidden"
             >
               <LandingPage onEnterDashboard={() => setView('booting')} />
             </motion.div>
@@ -168,9 +171,16 @@ function App() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.99 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="flex-1"
+              className="flex-1 overflow-y-auto"
             >
-              <Dashboard onBackToLanding={() => setView('landing')} />
+              <Dashboard 
+                onBackToLanding={() => {
+                  setIsAdvancedMode(false);
+                  setView('landing');
+                }} 
+                isAdvancedMode={isAdvancedMode}
+                setIsAdvancedMode={setIsAdvancedMode}
+              />
             </motion.div>
           )}
         </AnimatePresence>

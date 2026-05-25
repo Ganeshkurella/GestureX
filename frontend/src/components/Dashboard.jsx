@@ -3,7 +3,6 @@ import { Settings, Eye, HelpCircle, Code, Server, Play, RefreshCw, Cpu, Layers, 
 import WebcamPanel from './WebcamPanel';
 import StatusIndicator from './StatusIndicator';
 import CoordinateViewer from './CoordinateViewer';
-import SpatialHandVisualizer from './SpatialHandVisualizer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDatasetCounts, saveDatasetSample } from '../services/api';
 
@@ -58,7 +57,7 @@ const GESTURE_THEMES = {
   }
 };
 
-export default function Dashboard({ onBackToLanding }) {
+export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvancedMode }) {
   const [processingMode, setProcessingMode] = useState('client'); // 'client' | 'server'
   const [showConnections, setShowConnections] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
@@ -90,7 +89,6 @@ export default function Dashboard({ onBackToLanding }) {
   const [inferenceLatency, setInferenceLatency] = useState(0);
 
   // Layout states
-  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
 
   // Sparkline data states
   const [latencyHistory, setLatencyHistory] = useState(Array(15).fill(0));
@@ -530,8 +528,7 @@ export default function Dashboard({ onBackToLanding }) {
                 </div>
               </div>
 
-              {/* Spatial Hand Mesh Visualizer */}
-              <SpatialHandVisualizer landmarksData={handsData} />
+              {/* 3D telemetry removed from workspace */}
               
             </div>
 
