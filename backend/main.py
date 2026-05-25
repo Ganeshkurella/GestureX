@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.websocket_cv import router as websocket_router
+from app.routes.dataset import router as dataset_router
 
 app = FastAPI(
     title="GestureX API",
@@ -18,8 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include the CV WebSocket router
+# Include routers
 app.include_router(websocket_router)
+app.include_router(dataset_router)
 
 @app.get("/")
 def read_root():

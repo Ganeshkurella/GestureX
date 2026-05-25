@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Settings, Eye, HelpCircle, Code, Server, Play, StopCircle, RefreshCw, Cpu, Layers } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Settings, Eye, HelpCircle, Code, Server, Play, StopCircle, RefreshCw, Cpu, Layers, Database, Disc, Circle } from 'lucide-react';
 import WebcamPanel from './WebcamPanel';
 import StatusIndicator from './StatusIndicator';
 import CoordinateViewer from './CoordinateViewer';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDatasetCounts, saveDatasetSample } from '../services/api';
 
 export default function Dashboard({ onBackToLanding }) {
   const [processingMode, setProcessingMode] = useState('client'); // 'client' | 'server'
@@ -16,9 +17,112 @@ export default function Dashboard({ onBackToLanding }) {
   
   const [activeTab, setActiveTab] = useState('workspace'); // 'workspace' | 'docs'
 
-  const handleHandResults = (hands) => {
+  // Dataset recording state
+  const [isRecordMode, setIsRecordMode] = useState(false);
+  const [selectedGesture, setSelectedGesture] = useState('Thumbs Up');
+  const [sampleCounts, setSampleCounts] = useState({
+    'Thumbs Up': 0,
+    'Peace': 0,
+    'Stop Palm': 0,
+    'Fist': 0,
+    'OK Sign': 0
+  });
+  const [isRecordingContinuous, setIsRecordingContinuous] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('IDLE'); // 'IDLE' | 'SAVING' | 'SUCCESS' | 'ERROR'
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleHandResults = useCallback((hands) => {
     setHandsData(hands);
-  };
+  }, []);
+
+  // Fetch initial sample counts
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const counts = await getDatasetCounts();
+      if (counts) {
+        setSampleCounts(counts);
+      }
+    };
+    fetchCounts();
+  }, []);
+
+  // Save single snapshot
+  const handleSaveSample = useCallback(async () => {
+    if (handsData.length === 0) {
+      setSaveStatus('ERROR');
+      setErrorMsg('No hand detected.');
+      setTimeout(() => setSaveStatus('IDLE'), 2000);
+      return;
+    }
+    setSaveStatus('SAVING');
+    try {
+      const hand = handsData[0];
+      const data = await saveDatasetSample(selectedGesture, hand.landmarks);
+      if (data && data.success) {
+        setSampleCounts(data.counts);
+        setSaveStatus('SUCCESS');
+        setTimeout(() => setSaveStatus('IDLE'), 1000);
+      } else {
+        setSaveStatus('ERROR');
+        setErrorMsg('Rejected by API.');
+        setTimeout(() => setSaveStatus('IDLE'), 2000);
+      }
+    } catch (err) {
+      setSaveStatus('ERROR');
+      setErrorMsg(err.message || 'REST stream failure.');
+      setTimeout(() => setSaveStatus('IDLE'), 2000);
+    }
+  }, [handsData, selectedGesture]);
+
+  // Continuous auto-recording timer
+  useEffect(() => {
+    if (!isRecordingContinuous) return;
+    
+    const interval = setInterval(async () => {
+      if (handsData.length > 0) {
+        try {
+          const hand = handsData[0];
+          const data = await saveDatasetSample(selectedGesture, hand.landmarks);
+          if (data && data.success) {
+            setSampleCounts(data.counts);
+          }
+        } catch (err) {
+          console.error("Auto-record error:", err);
+        }
+      }
+    }, 250); // 4 samples per second
+
+    return () => clearInterval(interval);
+  }, [isRecordingContinuous, handsData, selectedGesture]);
+
+  // Keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const gestureKeys = {
+        '1': 'Thumbs Up',
+        '2': 'Peace',
+        '3': 'Stop Palm',
+        '4': 'Fist',
+        '5': 'OK Sign'
+      };
+
+      if (gestureKeys[e.key]) {
+        setSelectedGesture(gestureKeys[e.key]);
+        e.preventDefault();
+      } else if (e.code === 'Space') {
+        handleSaveSample();
+        e.preventDefault();
+      } else if (e.key === 'r' || e.key === 'R') {
+        setIsRecordingContinuous(prev => !prev);
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSaveSample]);
 
   return (
     <div className="w-full max-w-6xl mx-auto py-6 px-4">
@@ -179,6 +283,134 @@ export default function Dashboard({ onBackToLanding }) {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Dataset Recorder Panel */}
+              <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 relative overflow-hidden">
+                {/* Top glow accent */}
+                <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${isRecordingContinuous ? 'via-cyber-rose animate-pulse' : 'via-cyber-amber'} to-transparent`}></div>
+
+                <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
+                  <h3 className="font-orbitron text-xs font-bold text-cyber-amber tracking-wider flex items-center gap-2">
+                    <Database className="w-3.5 h-3.5" /> DATASET RECORDER
+                  </h3>
+                  
+                  {/* Mode Toggle Checkbox */}
+                  <div className="flex items-center gap-1.5 cursor-pointer select-none" onClick={() => setIsRecordMode(!isRecordMode)}>
+                    <span className="text-[10px] text-cyber-text/50 font-mono">RECORDER:</span>
+                    <span className={`text-[10px] font-bold font-orbitron px-1.5 py-0.5 rounded border transition-colors ${
+                      isRecordMode 
+                        ? 'bg-cyber-amber/15 text-cyber-amber border-cyber-amber/40 shadow-neon-amber/20' 
+                        : 'bg-black/30 text-cyber-text/30 border-cyber-border/15'
+                    }`}>
+                      {isRecordMode ? 'ACTIVE' : 'STANDBY'}
+                    </span>
+                  </div>
+                </div>
+
+                {isRecordMode ? (
+                  <div className="space-y-4">
+                    {/* Gesture Class Select Buttons */}
+                    <div>
+                      <label className="text-[10px] text-cyber-text/50 font-mono uppercase block mb-1.5">
+                        Target Gesture Label
+                      </label>
+                      <div className="grid grid-cols-2 gap-1.5 bg-black/40 p-1.5 rounded border border-cyber-border/10">
+                        {['Thumbs Up', 'Peace', 'Stop Palm', 'Fist', 'OK Sign'].map((gesture, idx) => {
+                          const isActive = selectedGesture === gesture;
+                          return (
+                            <button
+                              key={gesture, idx}
+                              onClick={() => setSelectedGesture(gesture)}
+                              className={`py-1.5 rounded font-orbitron text-[9px] text-left px-2 tracking-wider transition-all flex items-center justify-between border ${
+                                isActive
+                                  ? 'bg-cyber-amber/20 text-cyber-amber border-cyber-amber/45 shadow-neon-amber/10'
+                                  : 'text-cyber-text/50 border-transparent hover:text-cyber-text/80'
+                              }`}
+                            >
+                              <span>{idx + 1}. {gesture.toUpperCase()}</span>
+                              <span className="font-mono text-[9px] bg-black/40 px-1 rounded text-cyber-text/40 font-bold">
+                                {sampleCounts[gesture] || 0}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Record Control Action Buttons */}
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-cyber-border/10">
+                      {/* Capture Snapshot */}
+                      <button
+                        onClick={handleSaveSample}
+                        disabled={handsData.length === 0 || isRecordingContinuous}
+                        className={`py-2 rounded font-orbitron text-[10px] font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                          handsData.length > 0 && !isRecordingContinuous
+                            ? 'bg-transparent border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black shadow-neon-cyan/20'
+                            : 'bg-black/30 text-cyber-text/30 border-cyber-border/10 cursor-not-allowed'
+                        }`}
+                      >
+                        <Disc className="w-3.5 h-3.5" /> SNAPSHOT [SPACE]
+                      </button>
+
+                      {/* Toggle Auto-Recording */}
+                      <button
+                        onClick={() => setIsRecordingContinuous(!isRecordingContinuous)}
+                        disabled={handsData.length === 0}
+                        className={`py-2 rounded font-orbitron text-[10px] font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                          handsData.length > 0
+                            ? isRecordingContinuous
+                              ? 'bg-cyber-rose text-black border-cyber-rose shadow-neon-rose'
+                              : 'bg-transparent border-cyber-rose text-cyber-rose hover:bg-cyber-rose hover:text-black shadow-neon-rose/20'
+                            : 'bg-black/30 text-cyber-text/30 border-cyber-border/10 cursor-not-allowed'
+                        }`}
+                      >
+                        <Play className={`w-3.5 h-3.5 ${isRecordingContinuous ? 'animate-spin' : ''}`} />
+                        {isRecordingContinuous ? 'STOP RECORD' : 'AUTO RECORD [R]'}
+                      </button>
+                    </div>
+
+                    {/* Status Feedback bar */}
+                    <div className="h-6 flex items-center justify-center text-[10px] font-mono rounded bg-black/40 border border-cyber-border/5 text-center">
+                      {saveStatus === 'SAVING' && (
+                        <span className="text-cyber-cyan flex items-center gap-1 animate-pulse justify-center">
+                          <RefreshCw className="w-3 h-3 animate-spin" /> STREAMING COORDINATES TO CSV...
+                        </span>
+                      )}
+                      {saveStatus === 'SUCCESS' && (
+                        <span className="text-cyber-green font-bold">
+                          ✓ SAMPLE EXPORTED SUCCESSFULLY
+                        </span>
+                      )}
+                      {saveStatus === 'ERROR' && (
+                        <span className="text-cyber-rose font-bold flex items-center gap-1 justify-center">
+                          ⚠ ERROR: {errorMsg}
+                        </span>
+                      )}
+                      {saveStatus === 'IDLE' && (
+                        <span className="text-cyber-text/45">
+                          {handsData.length > 0 
+                            ? 'SENSOR READY - SPACE TO RECORD' 
+                            : 'AWAITING HAND FEED...'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-xs font-mono text-cyber-text/60 space-y-2 py-1">
+                    <p className="text-[10px] leading-relaxed">
+                      Collect precise 21 joint landmark skeletons to compile clean training datasets for 5 target static gestures.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 pt-2 text-[10px]">
+                      {Object.entries(sampleCounts).map(([name, count]) => (
+                        <div key={name} className="flex justify-between bg-black/25 px-2 py-1 rounded border border-cyber-border/5">
+                          <span>{name}</span>
+                          <span className="text-cyber-cyan font-bold">{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Coordinates Viewer Panel */}
