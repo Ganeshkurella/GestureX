@@ -110,8 +110,8 @@ export default function WebcamPanel({
       const isRightHand = hand.label === 'Right';
       const themeColor = isRightHand ? '#00ff88' : '#66fcf1';
       
-      // 1. Calculate & Draw Bounding Box with Cyberpunk corners (Mirroring X: 1.0 - x)
-      const xs = hand.landmarks.map(lm => (1.0 - lm.x) * canvas.width);
+      // 1. Calculate & Draw Bounding Box with Cyberpunk corners (mathematically mirrored X axis)
+      const xs = hand.landmarks.map(lm => (1 - lm.x) * canvas.width);
       const ys = hand.landmarks.map(lm => lm.y * canvas.height);
       const minX = Math.min(...xs) - 20;
       const maxX = Math.max(...xs) + 20;
@@ -161,15 +161,15 @@ export default function WebcamPanel({
       ctx.fillStyle = isRightHand ? 'rgba(0, 255, 136, 0.03)' : 'rgba(102, 252, 241, 0.03)';
       ctx.fillRect(minX, minY, boxWidth, boxHeight);
 
-      // Label Bounding Box (drawn normally left-to-right, un-mirrored)
+      // Label Bounding Box
       ctx.fillStyle = themeColor;
       ctx.font = 'bold 9px Orbitron, sans-serif';
       ctx.fillText(`TARGET LOCKED: ${hand.label.toUpperCase()}`, minX, minY - 8);
 
-      // 2. Draw Palm Radar Sweep centered at middle finger MCP (Landmark 9)
+      // 2. Draw Palm Radar Sweep centered at middle finger MCP (Landmark 9, mathematically mirrored)
       const palmMCP = hand.landmarks[9];
       if (palmMCP) {
-        const cx = (1.0 - palmMCP.x) * canvas.width;
+        const cx = (1 - palmMCP.x) * canvas.width;
         const cy = palmMCP.y * canvas.height;
         const radius = 30;
 
@@ -191,7 +191,7 @@ export default function WebcamPanel({
         ctx.shadowBlur = 0;
       }
       
-      // 3. Draw connections
+      // 3. Draw connections (mathematically mirrored X axis)
       if (showConnections) {
         ctx.beginPath();
         ctx.lineWidth = 3;
@@ -203,19 +203,18 @@ export default function WebcamPanel({
           const ptA = hand.landmarks[start];
           const ptB = hand.landmarks[end];
           if (ptA && ptB) {
-            ctx.moveTo((1.0 - ptA.x) * canvas.width, ptA.y * canvas.height);
-            ctx.lineTo((1.0 - ptB.x) * canvas.width, ptB.y * canvas.height);
+            ctx.moveTo((1 - ptA.x) * canvas.width, ptA.y * canvas.height);
+            ctx.lineTo((1 - ptB.x) * canvas.width, ptB.y * canvas.height);
           }
         });
         ctx.stroke();
         ctx.shadowBlur = 0;
       }
 
-      // 4. Draw landmark points
+      // 4. Draw landmark points (mathematically mirrored X axis)
       hand.landmarks.forEach((lm, idx) => {
-        const cx = (1.0 - lm.x) * canvas.width;
+        const cx = (1 - lm.x) * canvas.width;
         const cy = lm.y * canvas.height;
-        
         ctx.beginPath();
         ctx.arc(cx, cy, idx === 0 ? 6 : 3.5, 0, 2 * Math.PI);
         ctx.fillStyle = idx === 0 ? '#ffffff' : themeColor;
@@ -234,17 +233,15 @@ export default function WebcamPanel({
       });
       ctx.shadowBlur = 0;
 
-      // 5. Draw labels text
+      // 5. Draw labels text (mathematically mirrored X axis to prevent text mirroring)
       if (showLabels && hand.landmarks[9]) {
         const mc = hand.landmarks[9];
-        const cx = (1.0 - mc.x) * canvas.width;
-        const cy = mc.y * canvas.height;
         ctx.fillStyle = '#ffffff';
         ctx.font = '9px Orbitron, sans-serif';
         ctx.fillText(
           `${hand.label.toUpperCase()} HAND [CONF: ${(hand.confidence || 1.0).toFixed(2)}]`,
-          cx - 45,
-          cy - 18
+          (1 - mc.x) * canvas.width - 45,
+          mc.y * canvas.height - 18
         );
       }
     });
