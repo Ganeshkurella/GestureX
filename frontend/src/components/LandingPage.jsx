@@ -1,47 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Cpu, Zap, Code, ArrowRight, ShieldCheck, Activity, Terminal } from 'lucide-react';
-import { motion, useSpring, useMotionValue } from 'framer-motion';
-
-// Relative coordinates mapping out a simulated hand skeleton (Peace Sign)
-const PEACE_HAND_LANDMARKS = [
-  { x: 0, y: 50, id: 0 }, // Wrist
-  // Thumb
-  { x: -20, y: 35, id: 1 }, { x: -38, y: 20, id: 2 }, { x: -48, y: 10, id: 3 }, { x: -55, y: 4, id: 4 },
-  // Index (Extended)
-  { x: -15, y: 15, id: 5 }, { x: -20, y: -15, id: 6 }, { x: -24, y: -42, id: 7 }, { x: -28, y: -68, id: 8 },
-  // Middle (Extended)
-  { x: 2, y: 12, id: 9 }, { x: 4, y: -20, id: 10 }, { x: 6, y: -50, id: 11 }, { x: 8, y: -78, id: 12 },
-  // Ring (Folded)
-  { x: 18, y: 15, id: 13 }, { x: 25, y: 8, id: 14 }, { x: 20, y: 5, id: 15 }, { x: 16, y: 8, id: 16 },
-  // Pinky (Folded)
-  { x: 34, y: 25, id: 17 }, { x: 40, y: 20, id: 18 }, { x: 36, y: 18, id: 19 }, { x: 30, y: 22, id: 20 }
-];
-
-const PEACE_CONNECTIONS = [
-  [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
-  [0, 5], [5, 6], [6, 7], [7, 8],       // Index
-  [5, 9], [9, 10], [10, 11], [11, 12],   // Middle
-  [9, 13], [13, 14], [14, 15], [15, 16], // Ring
-  [13, 17], [0, 17], [17, 18], [18, 19], [19, 20] // Pinky & palm
-];
+import { motion } from 'framer-motion';
 
 export default function LandingPage({ onEnterDashboard }) {
-  const [isHovering, setIsHovering] = useState(false);
-
-  // Framer motion spring coordinates for smooth cursor following
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const springConfig = { damping: 25, stiffness: 180, mass: 0.8 };
-  const springX = useSpring(mouseX, springConfig);
-  const springY = useSpring(mouseY, springConfig);
-
-  const handleMouseMove = (e) => {
-    // Offset center of simulated hand relative to cursor
-    mouseX.set(e.clientX - 35);
-    mouseY.set(e.clientY - 35);
-  };
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -65,10 +26,8 @@ export default function LandingPage({ onEnterDashboard }) {
   return (
     <div 
       className="min-h-[92vh] flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden select-none"
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
     >
+
       
       {/* 1. Ambient Background Glows */}
       <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-cyber-cyan/10 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
@@ -82,59 +41,6 @@ export default function LandingPage({ onEnterDashboard }) {
         </div>
       </div>
 
-      {/* 3. Interactive Floating Hand Skeleton HUD (follows cursor) */}
-      {isHovering && (
-        <motion.div
-          style={{
-            x: springX,
-            y: springY,
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            zIndex: 15,
-            width: 160,
-            height: 160,
-          }}
-          className="hidden md:block"
-        >
-          <svg className="w-full h-full overflow-visible">
-            {/* Connection mesh lines */}
-            {PEACE_CONNECTIONS.map(([start, end], idx) => {
-              const ptA = PEACE_HAND_LANDMARKS[start];
-              const ptB = PEACE_HAND_LANDMARKS[end];
-              return (
-                <line
-                  key={idx}
-                  x1={ptA.x + 80}
-                  y1={ptA.y + 80}
-                  x2={ptB.x + 80}
-                  y2={ptB.y + 80}
-                  stroke="#66fcf1"
-                  strokeWidth="1.5"
-                  strokeOpacity="0.45"
-                  className="drop-shadow-[0_0_4px_rgba(102,252,241,0.5)]"
-                />
-              );
-            })}
-            
-            {/* Landmark nodes */}
-            {PEACE_HAND_LANDMARKS.map((lm) => (
-              <circle
-                key={lm.id}
-                cx={lm.x + 80}
-                cy={lm.y + 80}
-                r={lm.id === 0 ? 5 : 3.5}
-                fill={lm.id === 0 ? '#ffffff' : '#66fcf1'}
-                className="drop-shadow-[0_0_6px_rgba(102,252,241,0.8)]"
-              />
-            ))}
-          </svg>
-          <div className="absolute top-[165px] left-0 w-full text-center text-[8px] font-mono text-cyber-cyan/60 tracking-wider">
-            [PREVIEW MOUSE TRACKER]
-          </div>
-        </motion.div>
-      )}
 
       {/* 4. Main Contents Panel */}
       <motion.div 

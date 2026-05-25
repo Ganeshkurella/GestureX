@@ -28,8 +28,8 @@ export default {
         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
       },
       fontFamily: {
-        orbitron: ['Orbitron', 'sans-serif'],
-        sans: ['Inter', 'sans-serif'],
+        orbitron: ['Space Grotesk', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'sans-serif'],
       },
       animation: {
         'scan': 'scan-line 3s linear infinite',

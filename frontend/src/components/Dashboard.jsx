@@ -751,16 +751,16 @@ export default function Dashboard({ onBackToLanding }) {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs font-mono leading-relaxed text-cyber-text/85">
-              <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-[14px] font-sans leading-relaxed text-cyber-text/90">
+              <div className="space-y-8">
                 <div>
-                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-2 flex items-center gap-1.5">
+                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
                     <Cpu className="w-3.5 h-3.5" /> 1. HOW MEDIAPIPE HANDS WORKS
                   </h3>
-                  <p>
+                  <p className="mb-4 text-cyber-text/70">
                     MediaPipe Hand tracking is a hybrid, multi-stage machine learning system:
                   </p>
-                  <ul className="list-disc pl-5 mt-2 space-y-1.5">
+                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80">
                     <li>
                       <strong className="text-white">Palm Detection Model (BlazePalm):</strong> First runs a Single-Shot Detector (SSD) model optimized for hand localization across the entire frame. This is extremely fast and avoids scanning the full image repeatedly.
                     </li>
@@ -768,22 +768,22 @@ export default function Dashboard({ onBackToLanding }) {
                       <strong className="text-white">Hand Landmark Model:</strong> Processes only the cropped palm region returned by the detector, predicting 21 3D coordinates (x, y, depth) using regression.
                     </li>
                     <li>
-                      <strong className="text-white">Tracking optimization:</strong> In video streams, once hands are located, the detector sleeps. The landmarker tracks the hand position using the previous frame's coordinates, only waking up the palm detector when hand presence confidence drops.
+                      <strong className="text-white">Tracking Optimization:</strong> In video streams, once hands are located, the detector sleeps. The landmarker tracks the hand position using the previous frame's coordinates, only waking up the palm detector when hand presence confidence drops.
                     </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-2 flex items-center gap-1.5">
+                  <h3 className="text-cyber-cyan font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5" /> 2. THE 21 HAND LANDMARKS
                   </h3>
-                  <p>
+                  <p className="mb-4 text-cyber-text/70">
                     The 21 hand landmarks map the anatomical skeletal junctions of the human hand:
                   </p>
-                  <ul className="list-disc pl-5 mt-2 space-y-1.5">
+                  <ul className="list-disc pl-5 mt-3 space-y-2 text-cyber-text/80">
                     <li><strong className="text-white">Landmark 0:</strong> Wrist base</li>
-                    <li><strong className="text-white">Landmarks 1-4:</strong> Thumb (Carpometacarpal CMC, Metacarpophalangeal MCP, Interphalangeal IP, Tip)</li>
-                    <li><strong className="text-white">Landmarks 5-8:</strong> Index Finger (MCP, Proximal Interphalangeal PIP, Distal Interphalangeal DIP, Tip)</li>
+                    <li><strong className="text-white">Landmarks 1-4:</strong> Thumb <span className="text-cyber-text/50">(Carpometacarpal CMC, Metacarpophalangeal MCP, Interphalangeal IP, Tip)</span></li>
+                    <li><strong className="text-white">Landmarks 5-8:</strong> Index Finger <span className="text-cyber-text/50">(MCP, Proximal Interphalangeal PIP, Distal Interphalangeal DIP, Tip)</span></li>
                     <li><strong className="text-white">Landmarks 9-12:</strong> Middle Finger joints and tip</li>
                     <li><strong className="text-white">Landmarks 13-16:</strong> Ring Finger joints and tip</li>
                     <li><strong className="text-white">Landmarks 17-20:</strong> Pinky Finger joints and tip</li>
@@ -791,52 +791,61 @@ export default function Dashboard({ onBackToLanding }) {
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div>
-                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-2 flex items-center gap-1.5">
+                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
                     <Code className="w-3.5 h-3.5" /> 3. THE COORDINATE SPACE
                   </h3>
-                  <p>
+                  <p className="mb-4 text-cyber-text/70">
                     MediaPipe Hand Landmarker outputs normalized 3D Cartesian coordinates:
                   </p>
-                  <ul className="list-disc pl-5 mt-2 space-y-1.5">
+                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80">
                     <li>
-                      <strong className="text-white">X and Y:</strong> Represent standard pixel columns/rows, normalized to <code className="bg-black/40 px-1 py-0.5 text-cyber-cyan">[0.0, 1.0]</code>. The origin (0.0, 0.0) is the top-left corner of the image, while (1.0, 1.0) is the bottom-right corner.
+                      <strong className="text-white">X and Y:</strong> Represent standard pixel columns and rows, normalized to the range <code className="bg-black/40 px-1.5 py-0.5 rounded text-cyber-cyan font-mono text-xs">[0.0, 1.0]</code>.
+                      <span className="block mt-1 text-cyber-text/60">
+                        The origin (0.0, 0.0) represents the top-left corner, while (1.0, 1.0) represents the bottom-right corner of the image frame.
+                      </span>
                     </li>
                     <li>
-                      <strong className="text-white">Z (Depth):</strong> Represents landmark depth relative to the wrist. The wrist is configured as the reference depth point (Z = 0.0). A smaller/negative value indicates the joint is closer to the camera, while a larger/positive value indicates it is further away.
+                      <strong className="text-white">Z (Depth):</strong> Represents the landmark depth relative to the wrist base.
+                      <span className="block mt-1 text-cyber-text/60">
+                        The wrist is set as the reference point (Z = 0.0). A negative value means the joint is closer to the camera, and a positive value means it is further away.
+                      </span>
                     </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-2 flex items-center gap-1.5">
+                  <h3 className="text-cyber-rose font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5" /> 4. WHY COORDINATES ARE ULTRA-EFFICIENT
                   </h3>
-                  <p>
-                    Traditional computer vision requires feeding raw video pixels (e.g., 640x480x3 = 921,600 values) into deep convolutional networks. This is resource-intensive and slow.
+                  <p className="mb-4 text-cyber-text/80 leading-relaxed">
+                    Traditional computer vision requires feeding raw video pixels (e.g., <code className="bg-black/40 px-1.5 py-0.5 rounded text-cyber-rose font-mono text-xs">640 &times; 480 &times; 3 = 921,600</code> values) directly into deep convolutional networks. This is highly resource-intensive and slow.
                   </p>
-                  <p className="mt-2">
-                    Landmark-based systems reduce the problem dimension down to <strong className="text-white">21 landmarks × 3 coords (x,y,z) = 63 numerical values</strong>. This represents a <strong className="text-cyber-green">99.99% data compression ratio</strong>. Training a lightweight gesture classifier (e.g. SVM or simple feedforward neural network) on just 63 values consumes minimal memory, runs at over 1000 FPS, and works perfectly on mobile devices!
+                  <p className="text-cyber-text/80 leading-relaxed">
+                    Landmark-based systems reduce this complexity by extracting just <strong className="text-white">21 landmarks &times; 3 coordinates (x, y, z) = 63 numerical values</strong>. This represents a massive <strong className="text-cyber-green font-bold">99.99% data compression ratio</strong>.
+                  </p>
+                  <p className="mt-4 text-cyber-text/80 leading-relaxed">
+                    Training a lightweight classifier (e.g. SVM or simple neural network) on just 63 inputs consumes minimal memory, achieves execution speeds exceeding 1,000 FPS, and runs perfectly on edge devices.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-cyber-green font-orbitron font-bold tracking-wider mb-2 flex items-center gap-1.5">
+                  <h3 className="text-cyber-green font-orbitron font-bold tracking-wider mb-4 flex items-center gap-1.5">
                     <Play className="w-3.5 h-3.5" /> 5. PATH TO GESTURE CLASSIFICATION (PHASE 2)
                   </h3>
-                  <p>
-                    In the next phase, we will feed these 63 coordinates into machine learning models.
+                  <p className="mb-4 text-cyber-text/70">
+                    In the next phase, we will feed these 63 coordinates into machine learning models to predict active gesture labels:
                   </p>
-                  <ul className="list-disc pl-5 mt-2 space-y-1.5">
+                  <ul className="list-disc pl-5 mt-3 space-y-3.5 text-cyber-text/80">
                     <li>
-                      <strong className="text-white">Features Preprocessing:</strong> Translate landmarks relative to landmark 0 (wrist) to make the model translation-invariant. Normalize distances relative to hand size to make it scale-invariant.
+                      <strong className="text-white">Features Preprocessing:</strong> Translate coordinates relative to landmark 0 (wrist base) for translation-invariance. Normalize all distances by hand size to achieve scale-invariance.
                     </li>
                     <li>
-                      <strong className="text-white">Static Gesture Classifier:</strong> Feed the normalized 63 features to models like Multi-Layer Perceptrons (MLP), Random Forests, or SVMs to predict static signs (e.g., "Thumbs Up", "Peace Sign", "V Fist").
+                      <strong className="text-white">Static Gesture Classifier:</strong> Feed the preprocessed 63 features to lightweight models (MLPs, Random Forests, or SVMs) to predict discrete signs such as "Thumbs Up", "Peace", or "Fist".
                     </li>
                     <li>
-                      <strong className="text-white">Dynamic Gesture Classifier:</strong> Feed sequences of landmarks over time (e.g., 30 frames) to Recurrent Neural Networks (LSTM/GRU) or Temporal Convolutional Networks (TCN) to classify dynamic motions like "Swipe Left" or "Wave".
+                      <strong className="text-white">Dynamic Gesture Classifier:</strong> Feed sequences of landmarks over windowed frames (e.g., 30 FPS history) into LSTMs, GRUs, or Temporal Convolutional Networks (TCNs) to classify motions like swiping or waving.
                     </li>
                   </ul>
                 </div>
