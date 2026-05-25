@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
-import { CameraOff, Scan, AlertCircle, Maximize2, Minimize2, Terminal, ShieldAlert, Radio, Activity } from 'lucide-react';
+import { Camera, CameraOff, Scan, AlertCircle, Maximize2, Minimize2, Terminal, ShieldAlert, Radio, Activity } from 'lucide-react';
 import { useMediaPipe } from '../hooks/useMediaPipe';
 import { useFPS } from '../hooks/useFPS';
 import { useWebsocket } from '../hooks/useWebsocket';
@@ -38,6 +38,31 @@ export default function WebcamPanel({
   const [cameraError, setCameraError] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hudLogs, setHudLogs] = useState([]);
+  const [isCameraEnabled, setIsCameraEnabled] = useState(true);
+
+  // Toggle camera active state and clean up parent logs
+  const toggleCamera = useCallback(() => {
+    setIsCameraEnabled((prev) => {
+      const next = !prev;
+      if (!next) {
+        setCameraActive(false);
+        onHandResults([]);
+        // Clear canvas
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        if (onPredictionResult) {
+          onPredictionResult('None', 0.0, 0);
+        }
+        addHudLog("OPTICAL CAPTURE SUSPENDED BY OPERATOR");
+      } else {
+        addHudLog("INITIALIZING LIVE CAPTURE STREAM...");
+      }
+      return next;
+    });
+  }, [onHandResults, onPredictionResult, addHudLog]);
   
   // Reusable custom WebSocket Hook
   const { status: wsStatus, latency: wsLatency, connect, disconnect, sendFrame } = useWebsocket();
@@ -108,7 +133,10 @@ export default function WebcamPanel({
 
     handsData.forEach((hand) => {
       const isRightHand = hand.label === 'Right';
-      const themeColor = isRightHand ? '#00ff88' : '#66fcf1';
+      const conf = hand.confidence || 1.0;
+      
+      // Dynamic tactical colors based on target tracking confidence
+      const themeColor = conf >= 0.8 ? '#10b981' : conf >= 0.5 ? '#00f0ff' : '#f5a623';
       
       // 1. Calculate & Draw Bounding Box with Cyberpunk corners (mathematically mirrored X axis)
       const xs = hand.landmarks.map(lm => (1 - lm.x) * canvas.width);
@@ -122,69 +150,83 @@ export default function WebcamPanel({
       const boxHeight = maxY - minY;
       
       ctx.strokeStyle = themeColor;
-      ctx.lineWidth = 2;
-      ctx.shadowBlur = 6;
+      ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 4;
       ctx.shadowColor = themeColor;
       
       const cornerLength = Math.min(18, boxWidth * 0.25);
       
-      // Top-Left
+      // Top-Left corner bracket
       ctx.beginPath();
       ctx.moveTo(minX + cornerLength, minY);
       ctx.lineTo(minX, minY);
       ctx.lineTo(minX, minY + cornerLength);
       ctx.stroke();
       
-      // Top-Right
+      // Top-Right corner bracket
       ctx.beginPath();
       ctx.moveTo(maxX - cornerLength, minY);
       ctx.lineTo(maxX, minY);
       ctx.lineTo(maxX, minY + cornerLength);
       ctx.stroke();
       
-      // Bottom-Left
+      // Bottom-Left corner bracket
       ctx.beginPath();
       ctx.moveTo(minX + cornerLength, maxY);
       ctx.lineTo(minX, maxY);
       ctx.lineTo(minX, maxY - cornerLength);
       ctx.stroke();
       
-      // Bottom-Right
+      // Bottom-Right corner bracket
       ctx.beginPath();
       ctx.moveTo(maxX - cornerLength, maxY);
       ctx.lineTo(maxX, maxY);
       ctx.lineTo(maxX, maxY - cornerLength);
       ctx.stroke();
-
+ 
       // Translucent panel fill
       ctx.shadowBlur = 0;
-      ctx.fillStyle = isRightHand ? 'rgba(0, 255, 136, 0.03)' : 'rgba(102, 252, 241, 0.03)';
+      ctx.fillStyle = conf >= 0.8 
+        ? 'rgba(16, 185, 129, 0.02)' 
+        : conf >= 0.5 
+          ? 'rgba(0, 240, 255, 0.02)' 
+          : 'rgba(245, 166, 35, 0.02)';
       ctx.fillRect(minX, minY, boxWidth, boxHeight);
 
       // Label Bounding Box
       ctx.fillStyle = themeColor;
       ctx.font = 'bold 9px Orbitron, sans-serif';
-      ctx.fillText(`TARGET LOCKED: ${hand.label.toUpperCase()}`, minX, minY - 8);
-
-      // 2. Draw Palm Radar Sweep centered at middle finger MCP (Landmark 9, mathematically mirrored)
+      ctx.fillText(`TARGET LOCKED: ${hand.label.toUpperCase()}`, minX + 4, minY - 8);
+ 
+      // 2. Draw Palm Radar Sweep centered at middle finger MCP (Landmark 9)
       const palmMCP = hand.landmarks[9];
       if (palmMCP) {
         const cx = (1 - palmMCP.x) * canvas.width;
         const cy = palmMCP.y * canvas.height;
-        const radius = 30;
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+        const radius = 35;
+ 
+        // Outer range circle
         ctx.strokeStyle = `${themeColor}22`;
         ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
         ctx.stroke();
 
+        // Inner target crosshair
+        ctx.strokeStyle = `${themeColor}55`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
+        ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
+        ctx.stroke();
+ 
+        // Sweeping radar arm
         const sweepAngle = (performance.now() / 250) % (2 * Math.PI);
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(cx + radius * Math.cos(sweepAngle), cy + radius * Math.sin(sweepAngle));
         ctx.strokeStyle = themeColor;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.2;
         ctx.shadowBlur = 4;
         ctx.shadowColor = themeColor;
         ctx.stroke();
@@ -194,9 +236,9 @@ export default function WebcamPanel({
       // 3. Draw connections (mathematically mirrored X axis)
       if (showConnections) {
         ctx.beginPath();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = themeColor;
-        ctx.shadowBlur = 6;
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = `${themeColor}cc`;
+        ctx.shadowBlur = 4;
         ctx.shadowColor = themeColor;
         
         HAND_CONNECTIONS.forEach(([start, end]) => {
@@ -210,36 +252,40 @@ export default function WebcamPanel({
         ctx.stroke();
         ctx.shadowBlur = 0;
       }
-
+ 
       // 4. Draw landmark points (mathematically mirrored X axis)
       hand.landmarks.forEach((lm, idx) => {
         const cx = (1 - lm.x) * canvas.width;
         const cy = lm.y * canvas.height;
+        
+        const isFingertip = [4, 8, 12, 16, 20].includes(idx);
+        const isWrist = idx === 0;
+
         ctx.beginPath();
-        ctx.arc(cx, cy, idx === 0 ? 6 : 3.5, 0, 2 * Math.PI);
-        ctx.fillStyle = idx === 0 ? '#ffffff' : themeColor;
-        ctx.shadowBlur = 6;
+        ctx.arc(cx, cy, isWrist ? 5.5 : 3.2, 0, 2 * Math.PI);
+        ctx.fillStyle = isWrist ? '#ffffff' : themeColor;
+        ctx.shadowBlur = 4;
         ctx.shadowColor = themeColor;
         ctx.fill();
-
-        // Rings on tips
-        if ([4, 8, 12, 16, 20].includes(idx)) {
+ 
+        // Targeting rings on fingertips
+        if (isFingertip) {
           ctx.beginPath();
-          ctx.arc(cx, cy, 7, 0, 2 * Math.PI);
+          ctx.arc(cx, cy, 6.5, 0, 2 * Math.PI);
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 1.2;
+          ctx.lineWidth = 1.0;
           ctx.stroke();
         }
       });
       ctx.shadowBlur = 0;
-
-      // 5. Draw labels text (mathematically mirrored X axis to prevent text mirroring)
+ 
+      // 5. Draw labels text (preventing text mirroring)
       if (showLabels && hand.landmarks[9]) {
         const mc = hand.landmarks[9];
         ctx.fillStyle = '#ffffff';
         ctx.font = '9px Orbitron, sans-serif';
         ctx.fillText(
-          `${hand.label.toUpperCase()} HAND [CONF: ${(hand.confidence || 1.0).toFixed(2)}]`,
+          `${hand.label.toUpperCase()} H // SENSOR_ACC: ${(conf * 100).toFixed(0)}%`,
           (1 - mc.x) * canvas.width - 45,
           mc.y * canvas.height - 18
         );
@@ -489,19 +535,21 @@ export default function WebcamPanel({
 
       {/* Webcam Frame Element */}
       <div className="relative w-full h-full flex items-center justify-center">
-        <Webcam
-          ref={webcamRef}
-          audio={false}
-          onUserMedia={handleCameraUserMedia}
-          onUserMediaError={handleCameraError}
-          screenshotFormat="image/jpeg"
-          videoConstraints={{
-            width: 640,
-            height: 480,
-            facingMode: "user"
-          }}
-          className="absolute w-full h-full object-cover scale-x-[-1]"
-        />
+        {isCameraEnabled && (
+          <Webcam
+            ref={webcamRef}
+            audio={false}
+            onUserMedia={handleCameraUserMedia}
+            onUserMediaError={handleCameraError}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{
+              width: 640,
+              height: 480,
+              facingMode: "user"
+            }}
+            className="absolute w-full h-full object-cover scale-x-[-1]"
+          />
+        )}
 
         <canvas
           ref={canvasRef}
@@ -509,21 +557,34 @@ export default function WebcamPanel({
         />
 
         {/* HUD control bar (Visible unless fullscreen is handled) */}
-        {!isFullscreen && cameraActive && (
+        {!isFullscreen && (
           <div className="absolute top-3 right-3 z-20 flex gap-2">
             <button
-              onClick={toggleFullscreen}
-              className="p-1.5 rounded bg-black/60 border border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all shadow-[0_0_10px_rgba(102,252,241,0.15)]"
-              title="Fullscreen HUD Mode"
+              onClick={toggleCamera}
+              className={`p-1.5 rounded bg-black/60 border ${
+                isCameraEnabled 
+                  ? 'border-cyber-green/45 text-cyber-green hover:bg-cyber-green hover:text-black' 
+                  : 'border-cyber-rose/45 text-cyber-rose hover:bg-cyber-rose hover:text-white'
+              } transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]`}
+              title={isCameraEnabled ? "Turn Camera Off" : "Turn Camera On"}
             >
-              <Maximize2 className="w-3.5 h-3.5" />
+              {isCameraEnabled ? <Camera className="w-3.5 h-3.5" /> : <CameraOff className="w-3.5 h-3.5" />}
             </button>
+            {cameraActive && (
+              <button
+                onClick={toggleFullscreen}
+                className="p-1.5 rounded bg-black/60 border border-cyber-cyan/45 text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all shadow-[0_0_10px_rgba(102,252,241,0.15)]"
+                title="Fullscreen HUD Mode"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         )}
       </div>
 
       {/* Loaders/Offline/Error Displays */}
-      {isModelLoading && processingMode === 'client' && (
+      {isCameraEnabled && isModelLoading && processingMode === 'client' && (
         <div className="absolute inset-0 bg-cyber-bg/95 flex flex-col items-center justify-center z-20 gap-3">
           <Scan className="w-12 h-12 text-cyber-cyan animate-spin" />
           <p className="font-orbitron text-sm font-bold text-cyber-cyan tracking-widest animate-pulse">
@@ -535,7 +596,7 @@ export default function WebcamPanel({
         </div>
       )}
 
-      {processingMode === 'server' && wsStatus !== 'connected' && (
+      {isCameraEnabled && processingMode === 'server' && wsStatus !== 'connected' && (
         <div className="absolute inset-0 bg-cyber-bg/90 flex flex-col items-center justify-center z-20 gap-3 p-4 text-center">
           {wsStatus === 'error' ? (
             <ShieldAlert className="w-12 h-12 text-cyber-rose animate-bounce" />
@@ -553,7 +614,27 @@ export default function WebcamPanel({
         </div>
       )}
 
-      {(!cameraActive || cameraError || modelError) && (
+      {!isCameraEnabled && (
+        <div className="absolute inset-0 bg-cyber-bg/95 flex flex-col items-center justify-center z-20 p-4 gap-3 text-center border border-cyber-border/20 rounded-xl">
+          <div className="p-3 bg-cyber-rose/10 rounded-full border border-cyber-rose/30 text-cyber-rose animate-pulse">
+            <CameraOff className="w-8 h-8" />
+          </div>
+          <p className="font-orbitron text-sm font-bold text-cyber-rose uppercase tracking-widest">
+            SENSOR FEED SUSPENDED
+          </p>
+          <p className="text-xs text-cyber-text/50 font-sans max-w-[280px]">
+            Camera capture feed disabled. Click the camera icon or button below to re-initialize live tracking.
+          </p>
+          <button
+            onClick={() => setIsCameraEnabled(true)}
+            className="mt-2 px-4 py-1.5 bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/35 hover:bg-cyber-cyan hover:text-black rounded text-[10px] font-orbitron tracking-widest transition-all uppercase"
+          >
+            INITIALIZE FEED
+          </button>
+        </div>
+      )}
+
+      {isCameraEnabled && (!cameraActive || cameraError || modelError) && (
         <div className="absolute inset-0 bg-cyber-bg/90 flex flex-col items-center justify-center z-20 p-4 gap-2 text-center">
           <CameraOff className="w-12 h-12 text-cyber-rose animate-bounce" />
           <p className="font-orbitron text-sm font-bold text-cyber-rose uppercase">

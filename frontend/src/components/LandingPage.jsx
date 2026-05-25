@@ -27,21 +27,19 @@ export default function LandingPage({ onEnterDashboard }) {
     <div 
       className="min-h-[92vh] flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden select-none"
     >
-
       
       {/* 1. Ambient Background Glows */}
-      <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-cyber-cyan/10 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-cyber-rose/10 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '4s' }}></div>
-
+      <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-cyber-cyan/5 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-cyber-teal/5 rounded-full blur-[150px] pointer-events-none animate-pulse" style={{ animationDuration: '6s' }}></div>
+ 
       {/* 2. Cyber HUD Grid and Radar Sweep */}
-      <div className="absolute inset-0 pointer-events-none z-0 opacity-20">
+      <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.08]">
         <div className="w-full h-full cyber-grid relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-cyber-cyan/5 rounded-full"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-cyber-cyan/10 rounded-full border-dashed animate-spin" style={{ animationDuration: '60s' }}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-cyber-cyan/10 rounded-full"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-cyber-cyan/15 rounded-full border-dashed animate-spin" style={{ animationDuration: '80s' }}></div>
         </div>
       </div>
-
-
+ 
       {/* 4. Main Contents Panel */}
       <motion.div 
         variants={containerVariants}
@@ -52,98 +50,126 @@ export default function LandingPage({ onEnterDashboard }) {
         {/* Top Tech Badge */}
         <motion.div 
           variants={itemVariants}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-cyan/5 border border-cyber-cyan/35 text-cyber-cyan text-xs font-mono tracking-widest uppercase mb-8 shadow-[0_0_15px_rgba(102,252,241,0.15)] relative overflow-hidden group"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded bg-cyber-panel border border-cyber-border text-cyber-cyan text-[10px] font-mono tracking-widest uppercase mb-6 shadow-[0_0_15px_rgba(69,162,158,0.1)] relative overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-          <Terminal className="w-3.5 h-3.5 animate-pulse text-cyber-cyan" /> 
-          NEXT-GEN CV ENGINE ACTIVE
+          <span className="w-2 h-2 rounded-full bg-cyber-green animate-ping"></span>
+          SPATIAL CORE DETECTED // OPERATIONAL
         </motion.div>
+ 
+        {/* Sub-system Status Code */}
+        <motion.span
+          variants={itemVariants}
+          className="text-cyber-text/40 font-mono text-[9px] tracking-[0.3em] uppercase mb-2 block"
+        >
+          [ SYSTEM STATUS: CORE INFERENCE OPTIMIZED ]
+        </motion.span>
 
         {/* Title */}
         <motion.h1 
           variants={itemVariants}
-          className="text-6xl md:text-8xl font-black font-orbitron tracking-tighter mb-6 relative select-none"
+          className="text-4xl md:text-6xl font-black font-orbitron tracking-widest mb-6 relative select-none text-white leading-tight uppercase"
         >
-          <span className="relative z-10 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-            GESTURE
-          </span>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-teal to-cyber-blue relative z-10 font-black drop-shadow-[0_0_20px_rgba(102,252,241,0.4)]">
-            X
+          SPATIAL GESTURE<br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-teal to-cyber-green drop-shadow-[0_0_15px_rgba(0,240,255,0.25)]">
+            INTELLIGENCE ENGINE
           </span>
         </motion.h1>
-
+ 
         {/* Description */}
         <motion.p 
           variants={itemVariants}
-          className="text-cyber-text/80 text-sm md:text-base max-w-3xl font-mono mb-12 leading-relaxed px-4"
+          className="text-cyber-text/70 text-xs md:text-sm max-w-2xl font-sans mb-10 leading-relaxed px-4"
         >
-          An enterprise-grade, low-latency computer vision gesture intelligence platform. 
-          Engineered with MediaPipe 21-point tracking mesh, real-time ML prediction networks, 
-          and sub-40ms WebSocket telemetry streaming.
+          Real-time 21-point MediaPipe skeletal landmark tracking mesh, client-edge coordinates
+          extraction, and low-latency WebSocket machine learning prediction pipeline.
         </motion.p>
-
+ 
         {/* CTA Launch Button */}
-        <motion.div variants={itemVariants} className="relative group">
-          <div className="absolute -inset-1.5 bg-gradient-to-r from-cyber-cyan to-cyber-rose rounded-lg blur opacity-40 group-hover:opacity-75 transition duration-500 group-hover:duration-200"></div>
+        <motion.div variants={itemVariants} className="relative group mb-16">
+          <div className="absolute -inset-1 bg-gradient-to-r from-cyber-cyan to-cyber-teal rounded blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
           <button
             onClick={onEnterDashboard}
-            className="relative px-10 py-4 bg-cyber-bg/90 hover:bg-cyber-cyan hover:text-black text-cyber-cyan border border-cyber-cyan/50 font-orbitron font-bold text-sm tracking-widest rounded-lg flex items-center gap-3 transition-all duration-300 shadow-[0_0_25px_rgba(102,252,241,0.2)]"
+            className="relative px-8 py-3.5 bg-cyber-panel hover:bg-cyber-cyan hover:text-black text-cyber-cyan border border-cyber-cyan/40 font-orbitron font-bold text-xs tracking-widest rounded flex items-center gap-3 transition-all duration-300 shadow-[0_0_20px_rgba(0,240,255,0.05)]"
           >
-            INITIALIZE WORKSPACE 
+            INITIALIZE TELEMETRY CONSOLE
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </button>
         </motion.div>
-
+ 
         {/* Specs Highlights */}
         <motion.div 
           variants={itemVariants}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-20 text-left px-4"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-left px-4"
         >
-          <div className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group hover:border-cyber-cyan/40 hover:shadow-[0_0_20px_rgba(102,252,241,0.05)] transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-2 h-full bg-cyber-cyan opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="p-2.5 bg-cyber-cyan/10 rounded-lg w-fit text-cyber-cyan mb-4 group-hover:scale-110 transition-transform">
-              <Cpu className="w-5 h-5" />
+          {/* Card 1 */}
+          <div className="glass-panel p-5 rounded border border-cyber-border relative group hover:border-cyber-cyan/40 hover:shadow-[0_0_15px_rgba(0,240,255,0.03)] transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-cyan opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
+              <span className="text-[9px] font-mono text-cyber-cyan tracking-wider flex items-center gap-1.5 uppercase">
+                <Cpu className="w-3.5 h-3.5" /> MODULE 01 // CV_SKEL
+              </span>
+              <span className="text-[8px] bg-cyber-cyan/10 text-cyber-cyan px-1.5 rounded font-mono font-bold">ONLINE</span>
             </div>
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2.5 uppercase">
+
+            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2 uppercase">
               21-Point Skeletal Mesh
             </h3>
-            <p className="text-xs font-mono text-cyber-text/60 leading-relaxed">
-              Extracts high-fidelity coordinates mapping wrists, joints, and tips in real-time Cartesian depth spaces.
+            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
+              Extracts high-fidelity Cartesian coordinates mapping wrists, joints, and fingertips in absolute depth space.
             </p>
-            <div className="mt-4 flex items-center gap-1.5 text-[9px] font-mono text-cyber-cyan">
-              <ShieldCheck className="w-3.5 h-3.5" /> SECURE EDGE INFERENCE
+            
+            {/* Visual simulation bar */}
+            <div className="mt-4 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+              <div className="h-full bg-cyber-cyan/30 w-3/4 animate-pulse"></div>
             </div>
           </div>
-
-          <div className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group hover:border-cyber-green/45 hover:shadow-[0_0_20px_rgba(0,255,136,0.05)] transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-2 h-full bg-cyber-green opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="p-2.5 bg-cyber-green/10 rounded-lg w-fit text-cyber-green mb-4 group-hover:scale-110 transition-transform">
-              <Zap className="w-5 h-5" />
+ 
+          {/* Card 2 */}
+          <div className="glass-panel p-5 rounded border border-cyber-border relative group hover:border-cyber-green/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.03)] transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-green opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
+              <span className="text-[9px] font-mono text-cyber-green tracking-wider flex items-center gap-1.5 uppercase">
+                <Zap className="w-3.5 h-3.5" /> MODULE 02 // ACCEL_IF
+              </span>
+              <span className="text-[8px] bg-cyber-green/10 text-cyber-green px-1.5 rounded font-mono font-bold">ACTIVE</span>
             </div>
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2.5 uppercase">
-              Sub-10ms GPU Acceleration
+
+            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2 uppercase">
+              Lightweight Edge Inference
             </h3>
-            <p className="text-xs font-mono text-cyber-text/60 leading-relaxed">
-              Leverages browser-native WebAssembly delegate executing client-side tracking with zero network overhead.
+            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
+              Processes 63-dimensional coordinate arrays natively on the client using optimized GPU WASM delegates.
             </p>
-            <div className="mt-4 flex items-center gap-1.5 text-[9px] font-mono text-cyber-green">
-              <Activity className="w-3.5 h-3.5" /> REAL-TIME FPS OPTIMIZED
+
+            {/* Visual simulation bar */}
+            <div className="mt-4 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+              <div className="h-full bg-cyber-green/30 w-5/6 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
             </div>
           </div>
-
-          <div className="glass-panel p-6 rounded-xl border border-cyber-border/20 relative group hover:border-cyber-rose/40 hover:shadow-[0_0_20px_rgba(255,0,127,0.05)] transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-2 h-full bg-cyber-rose opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="p-2.5 bg-cyber-rose/10 rounded-lg w-fit text-cyber-rose mb-4 group-hover:scale-110 transition-transform">
-              <Code className="w-5 h-5" />
+ 
+          {/* Card 3 */}
+          <div className="glass-panel p-5 rounded border border-cyber-border relative group hover:border-cyber-rose/40 hover:shadow-[0_0_15px_rgba(239,68,68,0.03)] transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-rose opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div className="flex items-center justify-between mb-3 border-b border-cyber-border/10 pb-2">
+              <span className="text-[9px] font-mono text-cyber-rose tracking-wider flex items-center gap-1.5 uppercase">
+                <Code className="w-3.5 h-3.5" /> MODULE 03 // NET_TEL
+              </span>
+              <span className="text-[8px] bg-cyber-rose/10 text-cyber-rose px-1.5 rounded font-mono font-bold">READY</span>
             </div>
-            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2.5 uppercase">
+
+            <h3 className="font-orbitron text-xs font-bold tracking-wider text-white mb-2 uppercase">
               Websocket Telemetry
             </h3>
-            <p className="text-xs font-mono text-cyber-text/60 leading-relaxed">
-              Unified frame streaming and Random Forest ML classifications piped via bidirectional persistent sockets.
+            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
+              Streams coordinate frames and receives predictions via persistent, bidirectional WebSocket channels.
             </p>
-            <div className="mt-4 flex items-center gap-1.5 text-[9px] font-mono text-cyber-rose">
-              <Terminal className="w-3.5 h-3.5" /> FULL DOCKER STACK DEPLOYED
+
+            {/* Visual simulation bar */}
+            <div className="mt-4 w-full h-1 bg-black/40 rounded overflow-hidden relative">
+              <div className="h-full bg-cyber-rose/30 w-1/2 animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
           </div>
         </motion.div>

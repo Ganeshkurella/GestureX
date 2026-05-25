@@ -30,7 +30,7 @@ export default function StatusIndicator({
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {/* Model/Engine Status */}
-        <div className="flex flex-col p-2 bg-cyber-bg/40 rounded border border-cyber-border/10">
+        <div className="flex flex-col p-2 bg-black/40 rounded border border-cyber-border/10">
           <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider mb-1">
             Engine State
           </span>
@@ -43,7 +43,7 @@ export default function StatusIndicator({
         </div>
 
         {/* Camera Status */}
-        <div className="flex flex-col p-2 bg-cyber-bg/40 rounded border border-cyber-border/10">
+        <div className="flex flex-col p-2 bg-black/40 rounded border border-cyber-border/10">
           <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider mb-1">
             Sensor Feed
           </span>
@@ -57,7 +57,7 @@ export default function StatusIndicator({
         </div>
 
         {/* Detection Status */}
-        <div className="flex flex-col p-2 bg-cyber-bg/40 rounded border border-cyber-border/10">
+        <div className="flex flex-col p-2 bg-black/40 rounded border border-cyber-border/10">
           <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider mb-1">
             Hand Detection
           </span>
@@ -74,7 +74,7 @@ export default function StatusIndicator({
         </div>
 
         {/* WebSocket Status (Only active/visible if server-side processing is available) */}
-        <div className="flex flex-col p-2 bg-cyber-bg/40 rounded border border-cyber-border/10">
+        <div className="flex flex-col p-2 bg-black/40 rounded border border-cyber-border/10">
           <span className="text-[10px] text-cyber-text/40 font-mono uppercase tracking-wider mb-1">
             Backend WebSocket
           </span>

@@ -3,57 +3,58 @@ import { Settings, Eye, HelpCircle, Code, Server, Play, RefreshCw, Cpu, Layers, 
 import WebcamPanel from './WebcamPanel';
 import StatusIndicator from './StatusIndicator';
 import CoordinateViewer from './CoordinateViewer';
+import SpatialHandVisualizer from './SpatialHandVisualizer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDatasetCounts, saveDatasetSample } from '../services/api';
 
 const GESTURE_THEMES = {
   'Thumbs Up': { 
     color: 'text-cyber-green', 
-    bar: 'bg-cyber-green shadow-[0_0_12px_rgba(0,255,136,0.5)]', 
-    glow: 'shadow-[0_0_20px_rgba(0,255,136,0.25)]', 
+    bar: 'bg-cyber-green shadow-[0_0_12px_rgba(16,185,129,0.3)]', 
+    glow: 'shadow-[0_0_20px_rgba(16,185,129,0.15)]', 
     border: 'border-cyber-green/45',
-    svgGlow: 'rgba(0, 255, 136, 0.4)',
-    stroke: '#00ff88'
+    svgGlow: 'rgba(16, 185, 129, 0.2)',
+    stroke: '#10b981'
   },
   'Peace': { 
-    color: 'text-purple-400', 
-    bar: 'bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.5)]', 
-    glow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]', 
-    border: 'border-purple-500/40',
-    svgGlow: 'rgba(168, 85, 247, 0.4)',
-    stroke: '#a855f7'
+    color: 'text-cyber-blue', 
+    bar: 'bg-cyber-blue shadow-[0_0_12px_rgba(10,132,255,0.3)]', 
+    glow: 'shadow-[0_0_20px_rgba(10,132,255,0.15)]', 
+    border: 'border-cyber-blue/40',
+    svgGlow: 'rgba(10, 132, 255, 0.2)',
+    stroke: '#0a84ff'
   },
   'Stop Palm': { 
     color: 'text-cyber-rose', 
-    bar: 'bg-cyber-rose shadow-[0_0_12px_rgba(255,0,127,0.5)]', 
-    glow: 'shadow-[0_0_20px_rgba(255,0,127,0.25)]', 
+    bar: 'bg-cyber-rose shadow-[0_0_12px_rgba(255,59,48,0.3)]', 
+    glow: 'shadow-[0_0_20px_rgba(255,59,48,0.15)]', 
     border: 'border-cyber-rose/40',
-    svgGlow: 'rgba(255, 0, 127, 0.4)',
-    stroke: '#ff007f'
+    svgGlow: 'rgba(255, 59, 48, 0.2)',
+    stroke: '#ff3b30'
   },
   'Fist': { 
     color: 'text-cyber-amber', 
-    bar: 'bg-cyber-amber shadow-[0_0_12px_rgba(255,170,0,0.5)]', 
-    glow: 'shadow-[0_0_20px_rgba(255,170,0,0.25)]', 
+    bar: 'bg-cyber-amber shadow-[0_0_12px_rgba(245,166,35,0.3)]', 
+    glow: 'shadow-[0_0_20px_rgba(245,166,35,0.15)]', 
     border: 'border-cyber-amber/40',
-    svgGlow: 'rgba(255, 170, 0, 0.4)',
-    stroke: '#ffaa00'
+    svgGlow: 'rgba(245, 166, 35, 0.2)',
+    stroke: '#f5a623'
   },
   'OK Sign': { 
     color: 'text-cyber-cyan', 
-    bar: 'bg-cyber-cyan shadow-[0_0_12px_rgba(102,252,241,0.5)]', 
-    glow: 'shadow-[0_0_20px_rgba(102,252,241,0.25)]', 
+    bar: 'bg-cyber-cyan shadow-[0_0_12px_rgba(0,240,255,0.3)]', 
+    glow: 'shadow-[0_0_20px_rgba(0,240,255,0.15)]', 
     border: 'border-cyber-cyan/40',
-    svgGlow: 'rgba(102, 252, 241, 0.4)',
-    stroke: '#66fcf1'
+    svgGlow: 'rgba(0, 240, 255, 0.2)',
+    stroke: '#00f0ff'
   },
   'None': { 
     color: 'text-cyber-text/30', 
     bar: 'bg-cyber-text/20', 
     glow: '', 
     border: 'border-cyber-border/10',
-    svgGlow: 'rgba(197, 198, 199, 0.1)',
-    stroke: '#c5c6c7'
+    svgGlow: 'rgba(236, 240, 241, 0.05)',
+    stroke: '#ecf0f1'
   }
 };
 
@@ -406,18 +407,29 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
 
                   {/* Classification Text */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <span className="text-[8px] text-cyber-text/40 font-mono tracking-wider block">ACTIVE STATE</span>
-                    <h2 className={`text-2xl font-black font-orbitron tracking-wider mt-0.5 ${activeTheme.color} drop-shadow-[0_0_12px_rgba(102,252,241,0.2)]`}>
+                  <div className="flex-1 flex flex-col justify-center font-sans">
+                    <span className="text-[8px] text-cyber-text/40 font-mono tracking-wider block uppercase">Active System Inference</span>
+                    <h2 className={`text-2xl font-black font-orbitron tracking-wider mt-0.5 ${activeTheme.color} drop-shadow-[0_0_12px_rgba(0,240,255,0.2)]`}>
                       {activePrediction.toUpperCase()}
                     </h2>
+                    {/* Live AI thinking telemetry */}
+                    <div className="mt-1 text-[9px] font-mono text-cyber-cyan/70 animate-pulse flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-ping"></span>
+                      <span>
+                        {handsData.length > 0 
+                          ? predictionConfidence >= 0.7 
+                            ? "TARGET LOCKED // CONFIDENCE STABILIZED" 
+                            : "ANALYZING SKELETAL LANDMARK PATTERNS..." 
+                          : "SCANNING INTEGRITY BUFFER..."}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Telemetry charts row */}
                 <div className="grid grid-cols-2 gap-3">
                   {/* Latency Sparkline */}
-                  <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
+                  <div className="bg-black/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
                     <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Latency Timeline</div>
                     <div className="flex items-end justify-between gap-2 mt-1">
                       <span className="font-orbitron font-bold text-xs text-cyber-green">{inferenceLatency || '--'}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">ms</span></span>
@@ -425,7 +437,7 @@ export default function Dashboard({ onBackToLanding }) {
                         <path
                           d={getSparklinePath(latencyHistory, 60, 20)}
                           fill="transparent"
-                          stroke="#00ff88"
+                          stroke="#10b981"
                           strokeWidth="1.5"
                         />
                       </svg>
@@ -433,7 +445,7 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
 
                   {/* FPS Stability Sparkline */}
-                  <div className="bg-cyber-bg/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
+                  <div className="bg-black/40 p-2.5 rounded border border-cyber-border/10 flex flex-col justify-between h-[68px]">
                     <div className="text-[8px] font-mono text-cyber-text/40 uppercase">Frame Stability</div>
                     <div className="flex items-end justify-between gap-2 mt-1">
                       <span className="font-orbitron font-bold text-xs text-cyber-cyan">{fps}<span className="text-[8px] font-normal text-cyber-text/40 ml-0.5">Hz</span></span>
@@ -441,7 +453,7 @@ export default function Dashboard({ onBackToLanding }) {
                         <path
                           d={getSparklinePath(fpsHistory, 60, 20)}
                           fill="transparent"
-                          stroke="#66fcf1"
+                          stroke="#00f0ff"
                           strokeWidth="1.5"
                         />
                       </svg>
@@ -517,6 +529,9 @@ export default function Dashboard({ onBackToLanding }) {
                   </div>
                 </div>
               </div>
+
+              {/* Spatial Hand Mesh Visualizer */}
+              <SpatialHandVisualizer landmarksData={handsData} />
               
             </div>
 

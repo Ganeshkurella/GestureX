@@ -30,17 +30,17 @@ export default function CoordinateViewer({ landmarksData = [] }) {
   const confidence = hand ? hand.confidence || hand.score : null;
 
   return (
-    <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 flex flex-col h-[400px] relative overflow-hidden">
+    <div className="glass-panel p-4 rounded-xl border border-cyber-border/40 flex flex-col h-[400px] relative overflow-hidden bg-black/40">
       {/* Glow effect */}
-      <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-rose to-transparent"></div>
+      <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-cyan to-transparent"></div>
 
       <div className="flex items-center justify-between border-b border-cyber-border/20 pb-2 mb-3">
-        <h3 className="font-orbitron text-xs font-bold text-cyber-rose tracking-wider flex items-center gap-2">
+        <h3 className="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center gap-2">
           <Database className="w-3.5 h-3.5 animate-pulse" /> LANDMARK EXTRACTOR
         </h3>
         {handLabel && (
-          <span className="text-[10px] bg-cyber-rose/10 text-cyber-rose px-2 py-0.5 rounded font-mono border border-cyber-rose/20">
-            {handLabel.toUpperCase()} HAND ({Math.round(confidence * 100)}% Conf)
+          <span className="text-[10px] bg-cyber-cyan/15 text-cyber-cyan px-2 py-0.5 rounded font-mono border border-cyber-cyan/35">
+            {handLabel.toUpperCase()} HAND ({Math.round(confidence * 100)}% CONF)
           </span>
         )}
       </div>
@@ -51,8 +51,8 @@ export default function CoordinateViewer({ landmarksData = [] }) {
           onClick={() => setSelectedGroup('All')}
           className={`px-2 py-1 rounded text-[10px] font-mono transition-all duration-200 border ${
             selectedGroup === 'All'
-              ? 'bg-cyber-rose/20 text-cyber-rose border-cyber-rose/40 shadow-neon-rose'
-              : 'bg-cyber-bg/40 text-cyber-text/60 border-transparent hover:border-cyber-border/30'
+              ? 'bg-cyber-cyan/20 text-cyber-cyan border-cyber-cyan/45 shadow-[0_0_8px_rgba(0,240,255,0.25)]'
+              : 'bg-black/40 text-cyber-text/60 border-transparent hover:border-cyber-border/30'
           }`}
         >
           ALL (21)
@@ -63,8 +63,8 @@ export default function CoordinateViewer({ landmarksData = [] }) {
             onClick={() => setSelectedGroup(groupName)}
             className={`px-2 py-1 rounded text-[10px] font-mono transition-all duration-200 border ${
               selectedGroup === groupName
-                ? 'bg-cyber-rose/20 text-cyber-rose border-cyber-rose/40 shadow-neon-rose'
-                : 'bg-cyber-bg/40 text-cyber-text/60 border-transparent hover:border-cyber-border/30'
+                ? 'bg-cyber-cyan/20 text-cyber-cyan border-cyber-cyan/45 shadow-[0_0_8px_rgba(0,240,255,0.25)]'
+                : 'bg-black/40 text-cyber-text/60 border-transparent hover:border-cyber-border/30'
             }`}
           >
             {groupName.toUpperCase()}
@@ -113,8 +113,8 @@ export default function CoordinateViewer({ landmarksData = [] }) {
                     key={idx}
                     onMouseEnter={() => setHoveredIdx(idx)}
                     onMouseLeave={() => setHoveredIdx(null)}
-                    className={`border-b border-cyber-border/5 hover:bg-cyber-rose/5 transition-colors cursor-pointer ${
-                      hoveredIdx === idx ? 'bg-cyber-rose/5 text-white' : 'text-cyber-text/80'
+                    className={`border-b border-cyber-border/5 hover:bg-cyber-cyan/5 transition-colors cursor-pointer ${
+                      hoveredIdx === idx ? 'bg-cyber-cyan/5 text-white' : 'text-cyber-text/80'
                     }`}
                   >
                     <td className={`py-1.5 font-bold ${groupColor}`}>{idx}</td>
@@ -142,7 +142,7 @@ export default function CoordinateViewer({ landmarksData = [] }) {
       {hand && (
         <div className="mt-2 pt-2 border-t border-cyber-border/10 flex items-center justify-between text-[9px] text-cyber-text/50 font-mono">
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyber-rose animate-ping"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-ping"></span>
             <span>STREAMING REAL-TIME COORDINATES</span>
           </div>
           <span>21 x,y,z EXTRACTED</span>

@@ -8,16 +8,16 @@ export default {
     extend: {
       colors: {
         cyber: {
-          bg: "#030008",       // Deep space/near black background
-          panel: "rgba(10, 8, 20, 0.7)",  // Glassmorphic panel base
-          border: "rgba(102, 252, 241, 0.2)",
-          text: "#c5c6c7",
-          cyan: "#66fcf1",     // Cyber neon cyan
-          teal: "#45f3ff",
-          green: "#00ff88",    // Neon green (success/active)
-          rose: "#ff007f",     // Cyberpunk neon pink/magenta
-          blue: "#00d2ff",
-          amber: "#ff9f00"
+          bg: "#060708",       // Deep graphite tactical background
+          panel: "rgba(15, 17, 20, 0.8)",  // Matte dark slate panels
+          border: "rgba(69, 162, 158, 0.15)", // Muted telemetry teal border
+          text: "#ecf0f1",     // High readability off-white
+          cyan: "#00f0ff",     // Active targeting electric cyan
+          teal: "#45a29e",     // Muted secondary teal
+          green: "#10b981",    // Active status operational green
+          rose: "#ff3b30",     // Critical alert/infrared red
+          blue: "#0a84ff",     // Secondary system blue
+          amber: "#f5a623"     // System warning amber
         }
       },
       boxShadow: {
