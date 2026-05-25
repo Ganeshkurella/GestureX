@@ -105,16 +105,16 @@ export default function LandingPage({ onEnterDashboard }) {
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-cyan opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             <div className="flex items-center justify-between mb-2.5 border-b border-cyber-border/10 pb-1.5">
-              <span className="text-[11px] font-mono text-cyber-cyan tracking-wider flex items-center gap-1.5 uppercase">
+              <span className="text-xs font-mono text-cyber-cyan tracking-wider flex items-center gap-1.5 uppercase">
                 <Cpu className="w-3.5 h-3.5" /> MODULE 01 // CV_SKEL
               </span>
-              <span className="text-[9px] bg-cyber-cyan/10 text-cyber-cyan px-2 py-0.5 rounded font-mono font-bold">ONLINE</span>
+              <span className="text-[10px] bg-cyber-cyan/10 text-cyber-cyan px-2 py-0.5 rounded font-mono font-bold">ONLINE</span>
             </div>
  
-            <h3 className="font-orbitron text-sm font-bold tracking-wider text-white mb-2 uppercase">
+            <h3 className="font-orbitron text-base font-bold tracking-wider text-white mb-2 uppercase">
               21-Point Skeletal Mesh
             </h3>
-            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
+            <p className="text-sm font-sans text-cyber-text/60 leading-relaxed">
               Extracts high-fidelity Cartesian coordinates mapping wrists, joints, and fingertips in absolute depth space.
             </p>
             
@@ -129,16 +129,16 @@ export default function LandingPage({ onEnterDashboard }) {
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-green opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             <div className="flex items-center justify-between mb-2.5 border-b border-cyber-border/10 pb-1.5">
-              <span className="text-[11px] font-mono text-cyber-green tracking-wider flex items-center gap-1.5 uppercase">
+              <span className="text-xs font-mono text-cyber-green tracking-wider flex items-center gap-1.5 uppercase">
                 <Zap className="w-3.5 h-3.5" /> MODULE 02 // ACCEL_IF
               </span>
-              <span className="text-[9px] bg-cyber-green/10 text-cyber-green px-2 py-0.5 rounded font-mono font-bold">ACTIVE</span>
+              <span className="text-[10px] bg-cyber-green/10 text-cyber-green px-2 py-0.5 rounded font-mono font-bold">ACTIVE</span>
             </div>
  
-            <h3 className="font-orbitron text-sm font-bold tracking-wider text-white mb-2 uppercase">
+            <h3 className="font-orbitron text-base font-bold tracking-wider text-white mb-2 uppercase">
               Lightweight Edge Inference
             </h3>
-            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
+            <p className="text-sm font-sans text-cyber-text/60 leading-relaxed">
               Processes 63-dimensional coordinate arrays natively on the client using optimized GPU WASM delegates.
             </p>
  
@@ -153,16 +153,16 @@ export default function LandingPage({ onEnterDashboard }) {
             <div className="absolute top-0 left-0 w-[2px] h-full bg-cyber-rose opacity-40 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             <div className="flex items-center justify-between mb-2.5 border-b border-cyber-border/10 pb-1.5">
-              <span className="text-[11px] font-mono text-cyber-rose tracking-wider flex items-center gap-1.5 uppercase">
+              <span className="text-xs font-mono text-cyber-rose tracking-wider flex items-center gap-1.5 uppercase">
                 <Code className="w-3.5 h-3.5" /> MODULE 03 // NET_TEL
               </span>
-              <span className="text-[9px] bg-cyber-rose/10 text-cyber-rose px-2 py-0.5 rounded font-mono font-bold">READY</span>
+              <span className="text-[10px] bg-cyber-rose/10 text-cyber-rose px-2 py-0.5 rounded font-mono font-bold">READY</span>
             </div>
  
-            <h3 className="font-orbitron text-sm font-bold tracking-wider text-white mb-2 uppercase">
+            <h3 className="font-orbitron text-base font-bold tracking-wider text-white mb-2 uppercase">
               Websocket Telemetry
             </h3>
-            <p className="text-xs font-sans text-cyber-text/60 leading-relaxed">
+            <p className="text-sm font-sans text-cyber-text/60 leading-relaxed">
               Streams coordinate frames and receives predictions via persistent, bidirectional WebSocket channels.
             </p>
  
