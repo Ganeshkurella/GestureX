@@ -21,41 +21,21 @@ def normalize_hand_landmarks(landmarks: List[Dict[str, float]]) -> List[float]:
     if len(landmarks) != 21:
         raise ValueError(f"Expected 21 landmarks, but got {len(landmarks)}.")
 
-    # Step 1: Translation Invariance (Shift wrist to origin)
-    wrist_x = landmarks[0]['x']
-    wrist_y = landmarks[0]['y']
-    wrist_z = landmarks[0]['z']
-    
-    translated_coords = []
-    for lm in landmarks:
-        translated_coords.append({
-            'x': lm['x'] - wrist_x,
-            'y': lm['y'] - wrist_y,
-            'z': lm['z'] - wrist_z
-        })
-
-    # Step 2: Scale Invariance (Divide by maximum Euclidean distance from wrist)
-    max_distance = 0.0
+    # Extract 210 pairwise distances (fully rotation and translation invariant)
     distances = []
+    max_dist = 0.0
     
-    for lm in translated_coords:
-        # Distance formula: sqrt(x^2 + y^2 + z^2)
-        dist = np.sqrt(lm['x']**2 + lm['y']**2 + lm['z']**2)
-        distances.append(dist)
-        if dist > max_distance:
-            max_distance = dist
-
-    # Prevent division by zero if hand tracking is corrupted/static
-    if max_distance == 0.0:
-        max_distance = 1.0
-
-    # Step 3: Flatten into a 63-element list
-    normalized_flat = []
-    for lm in translated_coords:
-        normalized_flat.extend([
-            float(lm['x'] / max_distance),
-            float(lm['y'] / max_distance),
-            float(lm['z'] / max_distance)
-        ])
-
-    return normalized_flat
+    for i in range(21):
+        for j in range(i + 1, 21):
+            dx = landmarks[i]['x'] - landmarks[j]['x']
+            dy = landmarks[i]['y'] - landmarks[j]['y']
+            dz = landmarks[i]['z'] - landmarks[j]['z']
+            dist = np.sqrt(dx*dx + dy*dy + dz*dz)
+            distances.append(dist)
+            if dist > max_dist:
+                max_dist = dist
+                
+    if max_dist == 0.0:
+        max_dist = 1.0
+        
+    return [float(d / max_dist) for d in distances]

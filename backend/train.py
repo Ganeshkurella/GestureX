@@ -98,8 +98,9 @@ def main():
         "Ring MCP", "Ring PIP", "Ring DIP", "Ring Tip",
         "Pinky MCP", "Pinky PIP", "Pinky DIP", "Pinky Tip"
     ]
-    for name in landmark_names:
-        coordinate_names.extend([f"{name} X", f"{name} Y", f"{name} Z"])
+    for i in range(21):
+        for j in range(i + 1, 21):
+            coordinate_names.append(f"{landmark_names[i]} to {landmark_names[j]}")
         
     importances = clf.feature_importances_
     indices = np.argsort(importances)[::-1][:15] # Top 15 features

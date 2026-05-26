@@ -24,10 +24,11 @@ def initialize_csv():
     if not os.path.exists(CSV_PATH):
         with open(CSV_PATH, mode='w', newline='') as f:
             writer = csv.writer(f)
-            # Create header: gesture_name, x0, y0, z0, ..., z20
+            # Create header: gesture_name, d_0_1, d_0_2, ...
             header = ['gesture_name']
             for i in range(21):
-                header.extend([f'x{i}', f'y{i}', f'z{i}'])
+                for j in range(i + 1, 21):
+                    header.append(f'd_{i}_{j}')
             writer.writerow(header)
         print(f"Initialized CSV file at: {CSV_PATH}")
 

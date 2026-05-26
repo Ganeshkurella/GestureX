@@ -149,7 +149,8 @@ def seed_dataset(samples_per_gesture: int = 200):
         # Write headers
         headers = ['gesture_name']
         for i in range(21):
-            headers.extend([f'x{i}', f'y{i}', f'z{i}'])
+            for j in range(i + 1, 21):
+                headers.append(f'd_{i}_{j}')
         writer.writerow(headers)
         writer.writerows(rows)
         
