@@ -397,6 +397,9 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
                 For maximum tracking accuracy, position your device <span className="text-white font-bold">40-50 cm</span> away from your hand.
               </div>
 
+              {/* Render Active Recognition Card on mobile viewports ABOVE the webcam */}
+              {renderActivePredictionCard(true)}
+
               <WebcamPanel
                 processingMode={processingMode}
                 showConnections={showConnections}
@@ -409,9 +412,6 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
                 activePrediction={activePrediction}
                 predictionConfidence={predictionConfidence}
               />
-
-              {/* Render Active Recognition Card on mobile viewports */}
-              {renderActivePredictionCard(true)}
 
               {/* Status indicator underneath */}
               <StatusIndicator
