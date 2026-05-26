@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from app.schemas.gesture import GestureRequest, GestureResponse
+from app.cv.preprocessor import normalize_hand_landmarks
 from app.services.predictor import predictor_service
 
 router = APIRouter(prefix="/api", tags=["prediction"])

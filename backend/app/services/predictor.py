@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 import logging
 from typing import List, Dict, Tuple, Optional
-from app.utils.preprocessor import normalize_hand_landmarks
+from app.cv.preprocessor import normalize_hand_landmarks
 
 # Setup structured logger
 logging.basicConfig(
