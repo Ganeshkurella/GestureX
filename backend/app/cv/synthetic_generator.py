@@ -73,11 +73,12 @@ def make_stop_palm(hand: list) -> list:
 def make_thumbs_up(hand: list) -> list:
     """Thumb extended outward, all other fingers curled tightly into fist."""
     flexed = make_fist(hand)
-    # Restore thumb to fully extended position (pointing UP)
-    flexed[1] = {'x': 0.08, 'y': -0.15, 'z': -0.02}
-    flexed[2] = {'x': 0.08, 'y': -0.28, 'z': -0.04}
-    flexed[3] = {'x': 0.08, 'y': -0.40, 'z': -0.05}
-    flexed[4] = {'x': 0.08, 'y': -0.52, 'z': -0.06}
+    # Restore thumb to fully extended position (pointing OUTWARD)
+    # Since we use rotation-invariant pairwise distances, pointing straight out creates the most distinct geometric profile (large distance from thumb tip to curled knuckles)
+    flexed[1] = {'x': 0.15, 'y': -0.05, 'z': -0.02}
+    flexed[2] = {'x': 0.25, 'y': -0.05, 'z': -0.04}
+    flexed[3] = {'x': 0.35, 'y': -0.05, 'z': -0.05}
+    flexed[4] = {'x': 0.45, 'y': -0.05, 'z': -0.06}
     return flexed
 
 def make_peace(hand: list) -> list:
