@@ -73,11 +73,11 @@ def make_stop_palm(hand: list) -> list:
 def make_thumbs_up(hand: list) -> list:
     """Thumb extended outward, all other fingers curled tightly into fist."""
     flexed = make_fist(hand)
-    # Restore thumb to fully extended position (pointing up/sideways)
-    flexed[1] = {'x': 0.12, 'y': -0.08, 'z': -0.02}
-    flexed[2] = {'x': 0.22, 'y': -0.14, 'z': -0.04}
-    flexed[3] = {'x': 0.28, 'y': -0.18, 'z': -0.05}
-    flexed[4] = {'x': 0.32, 'y': -0.22, 'z': -0.06}
+    # Restore thumb to fully extended position (pointing UP)
+    flexed[1] = {'x': 0.08, 'y': -0.15, 'z': -0.02}
+    flexed[2] = {'x': 0.08, 'y': -0.28, 'z': -0.04}
+    flexed[3] = {'x': 0.08, 'y': -0.40, 'z': -0.05}
+    flexed[4] = {'x': 0.08, 'y': -0.52, 'z': -0.06}
     return flexed
 
 def make_peace(hand: list) -> list:
