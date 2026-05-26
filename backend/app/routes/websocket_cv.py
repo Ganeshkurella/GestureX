@@ -65,8 +65,16 @@ async def websocket_endpoint(websocket: WebSocket):
             
             if len(detected_hands) > 0 and predictor_service.is_loaded:
                 try:
-                    # Perform inference on the first detected hand
-                    gesture_name, confidence = predictor_service.predict(detected_hands[0]['landmarks'])
+                    # Mirror X coordinates to match the format of the training dataset
+                    inference_landmarks = []
+                    for lm in detected_hands[0]['landmarks']:
+                        inference_landmarks.append({
+                            'x': 1.0 - lm['x'], 
+                            'y': lm['y'], 
+                            'z': lm['z']
+                        })
+                    # Perform inference on the mirrored landmarks
+                    gesture_name, confidence = predictor_service.predict(inference_landmarks)
                 except Exception as pred_err:
                     print(f"WebSocket prediction error: {pred_err}")
             

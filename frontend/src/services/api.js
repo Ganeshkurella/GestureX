@@ -55,7 +55,7 @@ export async function saveDatasetSample(gestureName, landmarks) {
     const response = await apiClient.post('/dataset/sample', {
       gesture_name: gestureName,
       landmarks: landmarks.map(lm => ({
-        x: Number(lm.x),
+        x: 1 - Number(lm.x),
         y: Number(lm.y),
         z: Number(lm.z)
       }))
@@ -76,7 +76,7 @@ export async function predictGesture(landmarks) {
   try {
     const response = await apiClient.post('/predict', {
       landmarks: landmarks.map(lm => ({
-        x: Number(lm.x),
+        x: 1 - Number(lm.x),
         y: Number(lm.y),
         z: Number(lm.z)
       }))
