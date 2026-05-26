@@ -96,14 +96,14 @@ def make_peace(hand: list) -> list:
 def make_ok_sign(hand: list) -> list:
     """Index tip and Thumb tip touch. Middle, Ring, Pinky extended."""
     flexed = [dict(lm) for lm in hand]
-    # Thumb curled to meet index
-    flexed[2] = {'x': 0.09, 'y': -0.12, 'z': -0.03}
-    flexed[3] = {'x': 0.08, 'y': -0.16, 'z': -0.04}
-    flexed[4] = {'x': 0.06, 'y': -0.19, 'z': -0.05} # Thumb Tip
+    # Thumb curled to meet index (forming a wider O shape higher up)
+    flexed[2] = {'x': 0.15, 'y': -0.15, 'z': -0.03}
+    flexed[3] = {'x': 0.20, 'y': -0.25, 'z': -0.04}
+    flexed[4] = {'x': 0.18, 'y': -0.32, 'z': -0.05} # Thumb Tip
     # Index curled to meet thumb
-    flexed[6] = {'x': 0.07, 'y': -0.22, 'z': -0.03}
-    flexed[7] = {'x': 0.065, 'y': -0.20, 'z': -0.04}
-    flexed[8] = {'x': 0.06, 'y': -0.19, 'z': -0.05} # Index Tip (matching Thumb Tip)
+    flexed[6] = {'x': 0.08, 'y': -0.22, 'z': -0.03}
+    flexed[7] = {'x': 0.12, 'y': -0.32, 'z': -0.04}
+    flexed[8] = {'x': 0.18, 'y': -0.32, 'z': -0.05} # Index Tip (matching Thumb Tip)
     
     # Middle, Ring, Pinky remain fully extended (from default hand)
     return flexed

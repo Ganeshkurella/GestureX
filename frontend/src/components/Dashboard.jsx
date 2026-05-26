@@ -389,7 +389,14 @@ export default function Dashboard({ onBackToLanding, isAdvancedMode, setIsAdvanc
             className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6"
           >
             {/* Left: Webcam Stream Panel & Telemetry Indicator (span 2 cols) */}
-            <div className="lg:col-span-2 flex flex-col gap-4 sm:gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-4">
+
+              {/* Mobile Optimization Tip */}
+              <div className="block md:hidden bg-cyber-blue/10 border border-cyber-blue/30 rounded-lg p-3 text-center text-[10px] font-mono text-cyber-blue/90 shadow-[0_0_15px_rgba(10,132,255,0.1)]">
+                <span className="font-bold tracking-wider block mb-1">📱 OPTIMAL SENSOR RANGE</span>
+                For maximum tracking accuracy, position your device <span className="text-white font-bold">40-50 cm</span> away from your hand.
+              </div>
+
               <WebcamPanel
                 processingMode={processingMode}
                 showConnections={showConnections}
